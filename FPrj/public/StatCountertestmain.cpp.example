@@ -1,0 +1,65 @@
+//g++ StatCountertestmain.cpp -I../systemc/lib/include -L../systemc/lib/lib-linux64 -lsystemc
+#include "systemc.h"
+#include "StatCounter.h"
+#include "stat_module.h"
+
+SC_MODULE(test_counter) {
+    sc_in<bool> clk;
+    
+    void generate();
+    
+    StatCounter record;
+    
+    SC_CTOR(test_counter):record(name()) {
+        SC_THREAD(generate);
+        sensitive << clk.pos();
+        
+        record.register_counter("packet_count", StatCounterBase::Mono);//单个计数器
+        record.register_counter("link_count", StatCounterBase::Repeated);//成组计数器，可通过下标访问和修改
+    }
+};
+
+void test_counter::generate()
+{
+    int count = 0;
+    for (int cycle = 10; cycle > 0; cycle--)
+    {
+        /*do something...*/
+        record.increase_counter("packet_count", 1);
+        for (int i = 1; i <= 10; i++)
+        {
+            if(0 == rand()%2)
+            {
+                record.increase_counter("link_count", i, 1);
+                record.increase_counter("link_count", 0, 1);
+                count++;
+            }  
+        }
+        wait();
+    }
+    
+    std::cout<<"packet_count "<<record.retrieve_counter("packet_count")<<endl;
+    std::cout<<"link_count "<<record.retrieve_counter("link_count", 0)<<" while count is "<<count<<endl;
+    std::cout<<"link_count size is "<<record.retrieve_counter_size("link_count")<<endl;
+    
+    record.reset_counter("packet_count");
+    record.reset_counter("link_count");
+    
+    std::cout<<"packet_count "<<record.retrieve_counter("packet_count")<<" after reset "<<endl;
+    std::cout<<"link_count "<<record.retrieve_counter("link_count", 0)<<" after reset "<<endl;
+    
+    wait();
+    sc_stop();
+}
+
+int sc_main(int argc, char* argv[])
+{
+    sc_clock        clk("clk", sc_time(200, SC_MS));
+    stat_module s("stat_module");
+    s.clk(clk);
+    
+    test_counter t("test_counter");
+    t.clk(clk);
+    
+    sc_start();
+}

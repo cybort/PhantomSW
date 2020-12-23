@@ -1,0 +1,155 @@
+//g++ testmain.cpp -I../systemc/lib/include -L../systemc/lib/lib-linux64 -lsystemc
+
+#include "MultiClockTransmitter.h"
+#include "MultiClockReceiver.h"
+#include "systemc.h"
+#include <cstdlib>
+struct test_struct
+{
+    int a;
+    char b;
+    short c;
+    long d;
+    char e[15];
+    
+    
+    bool operator== (const test_struct& t) const
+    {
+            return a==t.a && b==t.b && c==t.c && d==t.d && std::equal(this->e, this->e+sizeof(this->e), t.e);
+    }
+};
+void sc_trace(sc_trace_file *tf, const test_struct& t, const std::string& name){}
+
+SC_MODULE(test_trans) {
+    sc_in<bool> clk;
+    
+    sc_out<bool> valid;
+    sc_out<bool> sop;
+    sc_out<bool> eop;
+    sc_out<int> mod;
+    sc_out<test_struct> data;
+    
+    MultiClockTransmitter<test_struct> tr;
+
+    void trans();
+
+    SC_CTOR(test_trans):tr(data, valid, sop, eop, mod) {
+        SC_THREAD(trans);
+        sensitive << clk.pos();
+
+    }
+};
+
+void test_trans::trans()
+{
+    tr.set_debug(true);
+    for (int i = 0; i < 100; i+=10)
+    {
+        /*test_struct t;
+        tr.transmit_to_end((char *)&t, sizeof(t));*/
+        int i = rand()%256;        
+        std::string s(i, static_cast<char>(rand()%('z'-'A')+'A'));
+        std::cout<<"prepare to send length:"<<i<<" "<<s<<std::endl;
+        tr.transmit_to_end(s.data(), s.size());
+    }
+    
+    sc_stop();
+}
+
+SC_MODULE(test_recv) {
+    sc_in<bool> clk;
+    
+    sc_in<bool> valid;
+    sc_in<bool> sop;
+    sc_in<bool> eop;
+    sc_in<int> mod;
+    sc_in<test_struct> data;
+    
+    MultiClockReceiver<test_struct> re;
+
+    void recv();
+
+    SC_CTOR(test_recv):re(data, valid, sop, eop, mod) {
+        SC_THREAD(recv);
+        sensitive << clk.pos();
+
+    }
+};
+
+void test_recv::recv()
+{
+    re.set_debug(true);
+    while (true)
+    {
+        re.receive_to_end();
+        std::cout<<"receive length:"<<re.result().size()<<" "<<re.result()<<std::endl;
+        wait();
+    }
+}
+
+/*
+class Base
+{
+public:
+    static void show_type(){std::cout<<"Base"<<endl;}
+    void virtual this_type(){show_type();}
+};
+class Derived1: public Base
+{
+public:
+    static void show_type(){std::cout<<"D1"<<endl;}
+    void virtual this_type(){show_type();}
+};
+class Derived2: public Base
+{
+public:
+    static void show_type(){std::cout<<"D2"<<endl;}
+    void virtual this_type(){show_type();}
+};
+
+void show(Base& b){b.show_type();}
+void show(Derived1& d){d.show_type();}
+
+template <typename T>
+void show_type(T& t){t.show_type();}
+
+template <typename T>
+void show_this_type(T& t){t.this_type();}
+*/
+int sc_main(int argc, char* argv[])
+{
+    
+    /*Derived1 d;
+    Base * b = &d;
+    b->show_type();//Base
+    b->this_type();//D1
+    show(*b);//Base
+    show_type(*b);//Base
+    show_this_type(*b);//D1
+    getchar();*/
+    
+    sc_clock        clk("clk", sc_time(200, SC_MS));
+    sc_signal<bool> sop, eop, valid;
+    sc_signal<int> mod;
+    sc_signal<test_struct> data;
+    
+    test_trans tt("test_trans");
+    tt.clk(clk);
+    tt.sop(sop);
+    tt.eop(eop);
+    tt.valid(valid);
+    tt.mod(mod);
+    tt.data(data);
+    
+    test_recv tr("test_recv");
+    tr.clk(clk);
+    tr.sop(sop);
+    tr.eop(eop);
+    tr.valid(valid);
+    tr.mod(mod);
+    tr.data(data);
+    
+    
+    
+    sc_start();
+}
