@@ -1,0 +1,67 @@
+## Variable that points to SystemC installation path
+vpath %.cpp ${PACKET} ${PUBLIC} ${FTM_PUBLIC} ${XML}
+vpath %.c $(INI)
+vpath %.h ${PACKET} ${PUBLIC} ${FTM_PUBLIC} ${XML} $(INI)
+SYSTEMC = ../third-party/systemc/lib
+TLM = ../third-party/tlm
+SCML = ../third-party/scml/install
+SOCKETS = ../third-party/sockets
+
+INCDIR = -I. \
+	-I.. \
+	-I$(SYSTEMC)/include \
+	-I$(TLM)/include/tlm \
+	-I$(SCML)/include \
+	-I$(SOCKETS)/include \
+	-I${PACKET} \
+	-I${PUBLIC} \
+	-I${FTM_PUBLIC} \
+	-I${XML} \
+  -I$(INI)
+
+LIBDIR = -L. -L.. -L$(SYSTEMC)/lib-$(TARGET_ARCH) -L$(SCML)/lib-$(TARGET_ARCH) -L$(SOCKETS)/lib
+
+LIBS   = -lsystemc -lscml2 -lModelingObjects -lscml2_logging -lm -lSockets -lpthread -lssl -lcrypto
+
+DIR_SRC = .
+DIR_OBJ = .
+SRCS = $(wildcard ${DIR_SRC}/*.cpp)
+SRCS += $(wildcard ${PACKET}/*.cpp)
+SRCS += $(wildcard ${PUBLIC}/*.cpp)
+SRCS += $(wildcard ${XML}/*.cpp)
+SRCS_C = $(wildcard ${INI}/*.c)
+
+OBJS = $(patsubst %.cpp,${DIR_OBJ}/%.o,$(notdir ${SRCS}))
+OBJS_C = $(patsubst %.c,${DIR_OBJ}/%.o,$(notdir ${SRCS_C}))
+DEPS = $(patsubst %.cpp,${DIR_OBJ}/%.d,$(notdir ${SRCS}))
+DEPS_C = $(patsubst %.c,${DIR_OBJ}/%.d,$(notdir ${SRCS_C}))
+
+CFLAGS += -DSC_USE_STD_STRING -MD `../third-party/sockets/bin/Sockets-config`  -std=c++11 -Wno-deprecated-declarations
+CC = g++
+
+EXE    = $(MODULE)
+
+.SUFFIXES: .cc .cpp .o
+
+$(EXE): $(OBJS) $(OBJS_C) $(SYSTEMC)/lib-$(TARGET_ARCH)/libsystemc.a $(SCML)/lib-$(TARGET_ARCH)/libscml2.a
+	$(CC) $(CFLAGS) $(INCDIR) $(LIBDIR) -o $@ $(OBJS) $(OBJS_C) $(LIBS) -g
+
+.cpp.o:
+	$(CC) $(CFLAGS) $(INCDIR) -c $<
+
+.cc.o:
+	$(CC) $(CFLAGS) $(INCDIR) -c $<
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCDIR) -c $<
+
+clean::
+	rm -f $(DEPS) $(DEPS_C) $(OBJS) $(OBJS_C) *~ $(EXE) $(EXE).vcd core
+
+ultraclean: clean
+	rm -f Makefile.deps
+
+Makefile.deps:
+#	$(CC) $(CFLAGS) $(INCDIR) -M $(SRCS) >> Makefile.deps
+
+#include Makefile.deps
