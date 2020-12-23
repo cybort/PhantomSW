@@ -1,0 +1,8 @@
+/autom4te.cache/
+/build/
+/build/**
+/install/
+/install/**
+/aclocal.m4
+/configure
+/Makefile.in

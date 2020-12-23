@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/fir.dir/main.cpp.o CMakeFiles/fir.dir/fir.cpp.o CMakeFiles/fir.dir/stimulus.cpp.o CMakeFiles/fir.dir/display.cpp.o -o fir  ../../../src/libsystemc.a -pthread 

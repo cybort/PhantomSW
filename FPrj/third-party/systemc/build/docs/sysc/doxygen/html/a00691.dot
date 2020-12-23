@@ -1,0 +1,19 @@
+digraph G
+{
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  rankdir=LR;
+  Node1 [label="sc_core::sc_fifo\< T \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node2 [label="sc_core::sc_fifo_in_if\< T \>",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00065.html"];
+  Node3 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node3 [label="sc_core::sc_fifo_out_if\< T \>",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00069.html"];
+  Node4 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node4 [label="sc_core::sc_prim_channel",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00156.html"];
+  Node4 -> Node4 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_update_next_p",fontname="FreeSans"];
+  Node5 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_data_written_event\nm_data_read_event",fontname="FreeSans"];
+  Node5 [label="sc_core::sc_event",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00048.html"];
+  Node5 -> Node5 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="none",fontname="FreeSans"];
+  Node6 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_writer\nm_reader",fontname="FreeSans"];
+  Node6 [label="sc_core::sc_port_base",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00152.html"];
+}

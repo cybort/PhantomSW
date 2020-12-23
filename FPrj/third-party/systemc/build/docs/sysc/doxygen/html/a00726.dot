@@ -1,0 +1,20 @@
+digraph G
+{
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  Node1 [label="sc_core::sc_mutex",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node2 [label="sc_core::sc_mutex_if",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00132.html"];
+  Node3 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node3 [label="sc_core::sc_object",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00134.html"];
+  Node3 -> Node3 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_parent",fontname="FreeSans"];
+  Node4 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_free",fontname="FreeSans"];
+  Node4 [label="sc_core::sc_event",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00048.html"];
+  Node4 -> Node4 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="none",fontname="FreeSans"];
+  Node3 -> Node4 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_parent_p",fontname="FreeSans"];
+  Node5 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_owner",fontname="FreeSans"];
+  Node5 [label="sc_core::sc_process_b",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00158.html"];
+  Node3 -> Node5 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node4 -> Node5 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_event_p\nm_timeout_event_p\nm_resume_event_p\nm_reset_event_p\nm_term_event_p",fontname="FreeSans"];
+  Node5 -> Node5 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_last_created_process_p\nm_runnable_p\nm_exist_p",fontname="FreeSans"];
+}

@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/sc_ttd.dir/main.cpp.o -o sc_ttd  ../../../../src/libsystemc.a -pthread 
