@@ -1,0 +1,75 @@
+## Variable that points to SystemC installation path
+SYSTEMC = ../third-party/systemc/lib
+TLM = ../third-party/tlm
+SCML = ../third-party/scml/install
+SOCKETS = ../third-party/sockets
+INI = ../third-party/ini
+EXTRA_SRC += $(INI)
+
+vpath %.cpp $(EXTRA_SRC)
+vpath %.c $(EXTRA_SRC)
+vpath %.h $(EXTRA_SRC)
+vpath %.h $(EXTRA_INC)
+
+CUR_DIR = ./
+DIR_SRC = $(CUR_DIR)src/
+DIR_INC = $(CUR_DIR)include/
+DIR_OBJ = $(CUR_DIR)obj/
+DIR_BIN = $(CUR_DIR)bin/
+DIRS := ./ $(shell find $(DIR_SRC) -maxdepth 2 -type d -not -iwholename '*.svn*') $(shell find $(DIR_INC) -maxdepth 2 -type d -not -iwholename '*.svn*')
+vpath %.cpp $(DIRS)
+vpath %.h $(DIRS)
+
+INCDIR = -I. -I.. -I$(SYSTEMC)/include -I$(TLM)/include/tlm -I$(SCML)/include -I$(SOCKETS)/include $(foreach inc, $(EXTRA_SRC), $(addprefix -I, $(inc))) $(foreach inc, $(EXTRA_INC), $(addprefix -I, $(inc))) $(foreach dir, $(DIRS), $(addprefix -I, $(dir)))
+LIBDIR = -L. -L.. -L$(SYSTEMC)/lib-$(TARGET_ARCH) -L$(SCML)/lib-$(TARGET_ARCH) -L$(SOCKETS)/lib $(foreach inc, $(EXTRA_SRC), $(addprefix -L, $(inc))) 
+
+LIBS   = -lsystemc -lscml2 -lModelingObjects -lscml2_logging -lm -lSockets -lpthread -lssl -lcrypto $(EXTRA_LIBS)
+
+
+SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
+SRCS += $(foreach inc, $(EXTRA_SRC), $(wildcard $(inc)/*.cpp))
+SRCS_C = $(foreach inc, $(EXTRA_SRC), $(wildcard $(inc)/*.c))
+OBJS = $(patsubst %.cpp,${DIR_OBJ}%.o,$(notdir ${SRCS}))
+OBJS_C = $(patsubst %.c,${DIR_OBJ}%.o,$(notdir ${SRCS_C}))
+OBJS_POS = $(addprefix $(DIR_OBJ),$(OBJS)) $(addprefix $(DIR_OBJ),$(OBJS_C))
+DEPS = $(patsubst %.cpp,${CUR_DIR}%.d,$(notdir ${SRCS})) $(patsubst %.c,${CUR_DIR}%.d,$(notdir ${SRCS_C}))
+DEPS_POS = $(addprefix $(DIR_OBJ),$(DEPS))
+
+CFLAGS += -DSC_USE_STD_STRING -MD `../third-party/sockets/bin/Sockets-config` -std=c++11 -Wno-deprecated-declarations
+CC = g++
+
+EXE    = $(MODULE)
+
+.SUFFIXES: .cc .cpp .o
+
+$(EXE): $(OBJS) $(OBJS_C) $(SYSTEMC)/lib-$(TARGET_ARCH)/libsystemc.a $(SCML)/lib-$(TARGET_ARCH)/libscml2.a
+	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
+	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
+	$(CC) $(CFLAGS) $(INCDIR) $(LIBDIR) -o $(DIR_BIN)$@ $(OBJS) $(OBJS_C) $(LIBS) -g -rdynamic
+
+$(OBJS):$(DIR_OBJ)%.o:%.cpp
+	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
+	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
+	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $@
+
+$(OBJS_C):$(DIR_OBJ)%.o:%.c
+	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
+	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
+	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $@
+
+#.cpp.o:
+#	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(DIR_OBJ)$@
+
+#.cc.o:
+#	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $(DIR_OBJ)$@
+
+clean::
+	rm -f $(OBJS) $(OBJS_C) $(DEPS_POS) *~ $(DIR_BIN)$(EXE) $(DIR_BIN)$(EXE).vcd core *.log
+
+ultraclean: clean
+	rm -f Makefile.deps
+
+Makefile.deps:
+#	$(CC) $(CFLAGS) $(INCDIR) -M $(SRCS) >> Makefile.deps
+
+#include Makefile.deps
