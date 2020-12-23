@@ -1,0 +1,12 @@
+digraph G
+{
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  Node1 [label="tlm_core/tlm_1/tlm_req_rsp/tlm_1_interfaces/tlm_master_slave_ifs.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node2 [label="tlm_core/tlm_1/tlm_req_rsp/tlm_adapters/tlm_adapters.h",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00133.html"];
+  Node1 -> Node3 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node3 [label="tlm_core/tlm_1/tlm_req_rsp/tlm_channels/tlm_req_rsp_channels/tlm_put_get_imp.h",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00139.html"];
+  Node1 -> Node4 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node4 [label="tlm_core/tlm_1/tlm_req_rsp/tlm_req_rsp.h",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00143.html"];
+}

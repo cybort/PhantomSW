@@ -1,0 +1,16 @@
+digraph G
+{
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  rankdir=LR;
+  Node1 [label="sc_core::sc_object_manager",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_module_name_stack",fontname="FreeSans"];
+  Node2 [label="sc_core::sc_module_name",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00127.html"];
+  Node2 -> Node2 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_next",fontname="FreeSans"];
+  Node3 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_instance_table",fontname="FreeSans"];
+  Node3 [label="std::map\< std::string, table_entry \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node4 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_object_stack",fontname="FreeSans"];
+  Node4 [label="std::vector\< sc_object * \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node5 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_event_it\nm_object_it",fontname="FreeSans"];
+  Node5 [label="std::map\< K, T \>::iterator",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip="STL iterator class."];
+}

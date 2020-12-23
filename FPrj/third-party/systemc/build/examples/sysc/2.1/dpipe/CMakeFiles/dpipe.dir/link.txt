@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/dpipe.dir/main.cpp.o -o dpipe  ../../../../src/libsystemc.a -pthread 

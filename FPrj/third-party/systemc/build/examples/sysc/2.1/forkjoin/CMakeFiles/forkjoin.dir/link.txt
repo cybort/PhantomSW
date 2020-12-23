@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/forkjoin.dir/forkjoin.cpp.o -o forkjoin  ../../../../src/libsystemc.a -pthread 

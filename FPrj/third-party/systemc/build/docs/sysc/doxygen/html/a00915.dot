@@ -1,0 +1,21 @@
+digraph G
+{
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  rankdir=LR;
+  Node1 [label="sc_core::sc_object",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_attr_cltn_p",fontname="FreeSans"];
+  Node2 [label="sc_core::sc_attr_cltn",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00019.html"];
+  Node3 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_child_events",fontname="FreeSans"];
+  Node3 [label="std::vector\< sc_event * \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_parent",fontname="FreeSans"];
+  Node4 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_name",fontname="FreeSans"];
+  Node4 [label="std::string",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip="STL class."];
+  Node5 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_simc",fontname="FreeSans"];
+  Node5 [label="sc_core::sc_simcontext",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00202.html"];
+  Node3 -> Node5 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_delta_events\nm_child_events",fontname="FreeSans"];
+  Node6 -> Node5 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_child_objects",fontname="FreeSans"];
+  Node6 [label="std::vector\< sc_object * \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node6 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="elements",fontname="FreeSans"];
+  Node6 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_child_objects",fontname="FreeSans"];
+}

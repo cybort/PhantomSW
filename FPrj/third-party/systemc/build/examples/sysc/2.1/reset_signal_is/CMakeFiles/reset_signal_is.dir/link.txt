@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/reset_signal_is.dir/reset_signal_is.cpp.o -o reset_signal_is  ../../../../src/libsystemc.a -pthread 

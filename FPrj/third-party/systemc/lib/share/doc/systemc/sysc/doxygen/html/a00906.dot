@@ -1,0 +1,29 @@
+digraph G
+{
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  rankdir=LR;
+  Node1 [label="sc_core::sc_module",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node2 [label="sc_core::sc_object",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00134.html"];
+  Node2 -> Node2 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_parent",fontname="FreeSans"];
+  Node3 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node3 [label="sc_core::sc_process_host",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$a00160.html"];
+  Node4 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_module_name_p",fontname="FreeSans"];
+  Node4 [label="sc_core::sc_module_name",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00127.html"];
+  Node4 -> Node4 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_next",fontname="FreeSans"];
+  Node1 -> Node4 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_module_p",fontname="FreeSans"];
+  Node5 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_name_gen",fontname="FreeSans"];
+  Node5 [label="sc_core::sc_name_gen",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00133.html"];
+  Node6 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="sensitive_neg",fontname="FreeSans"];
+  Node6 [label="sc_core::sc_sensitive_neg",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00183.html"];
+  Node1 -> Node6 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_module",fontname="FreeSans"];
+  Node7 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_port_vec",fontname="FreeSans"];
+  Node7 [label="std::vector\< sc_port_base * \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node8 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="sensitive",fontname="FreeSans"];
+  Node8 [label="sc_core::sc_sensitive",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00182.html"];
+  Node1 -> Node8 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_module",fontname="FreeSans"];
+  Node9 -> Node1 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="sensitive_pos",fontname="FreeSans"];
+  Node9 [label="sc_core::sc_sensitive_pos",height=0.2,width=0.4,color="red", fillcolor="white", style="filled",URL="$a00184.html"];
+  Node1 -> Node9 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="m_module",fontname="FreeSans"];
+}

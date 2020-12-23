@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/scx_barrier.dir/main.cpp.o -o scx_barrier  ../../../../src/libsystemc.a -pthread 

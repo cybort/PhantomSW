@@ -1,0 +1,1 @@
+/usr/local/bin/c++ -O2 -g -DNDEBUG -rdynamic CMakeFiles/simple_async.dir/main.cpp.o -o simple_async  ../../../../src/libsystemc.a -pthread 
