@@ -1,0 +1,16 @@
+            Release Notes for SystemC Modeling Library Release 2.1.1 
+            ========================================================
+
+CONTENTS
+========
+
+  1) What's new in this release?
+
+
+1) What's new in this release?
+==============================
+  - A bug when using enums with memories/registers/bitfields of sc_biguint
+    has been fixed.
+  - An extra template parameter has been added to the reg_vector_creator.
+  - The semantics of the ‘spacing’ parameter in reg_vector_creator has changed.
+
