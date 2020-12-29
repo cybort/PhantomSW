@@ -39,7 +39,7 @@ typedef struct tagMSG_HEAD_STRUCT
 }MSG_HEAD_STRUCT;
 
 #define MSG_HEADER_SIZE     sizeof(MSG_HEAD_STRUCT)
-#define MSG_PAYLAOD_SIZE    (128)
+#define MSG_PAYLAOD_SIZE    (256)
 
 
 CONST UINT g_uiPortNumber = 8888;

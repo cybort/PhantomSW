@@ -25,22 +25,18 @@ SC_MODULE(Cfu)
     sc_in<bool> IN_Ctl_Valid0;
     sc_in<sc_uint<4> > IN_Ctl_Type0;
     sc_in<CELL> IN_Ctl_Packet0;
-    sc_in<USHORT> IN_Ctl_Link0;
 
     sc_in<bool> IN_Ctl_Valid1;
     sc_in<sc_uint<4> > IN_Ctl_Type1;
     sc_in<CELL> IN_Ctl_Packet1;
-    sc_in<USHORT> IN_Ctl_Link1;
 
     sc_in<bool> IN_Ctl_Valid2;
     sc_in<sc_uint<4> > IN_Ctl_Type2;
     sc_in<CELL> IN_Ctl_Packet2;
-    sc_in<USHORT> IN_Ctl_Link2;
 
     sc_in<bool> IN_Ctl_Valid3;
     sc_in<sc_uint<4> > IN_Ctl_Type3;
     sc_in<CELL> IN_Ctl_Packet3;
-    sc_in<USHORT> IN_Ctl_Link3;
     sc_in_clk CLK;
 
     /* ¿ØÖÆÐÅÔª out port */

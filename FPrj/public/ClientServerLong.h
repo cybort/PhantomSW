@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-30 16:15:30
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-17 11:45:20
+ * @LastEditTime: 2020-12-23 16:37:48
  */
 #ifndef _CLIENTSERVER_H
 #define _CLIENTSERVER_H
@@ -21,7 +21,13 @@
 template <typename T> class ClientSocketLong : public TcpSocket
 {
 public:
-    ClientSocketLong(ISocketHandler & h) : TcpSocket(h), isConnected(false), debug(false) { SetLineProtocol(); }
+    ClientSocketLong(ISocketHandler & h, bool use_on_line = true) : TcpSocket(h), isConnected(false), debug(false)
+    {
+        if (use_on_line)
+        {
+            SetLineProtocol();
+        }
+    }
 
     ~ClientSocketLong() { SetCloseAndDelete(); }
     /*
@@ -64,12 +70,22 @@ public:
 
     void OnLine(const std::string & line)
     {
-        // SetCloseAndDelete();
-
-        std::string decoded = base64_decode(line);
-        if (decoded.size())
+        if (line.size())
         {
-            // printf("Reply from server: '%s'\n",decoded.c_str());
+            receive_queue.push(line);
+        }
+        else
+        {
+            // Send("\n");
+            // SetCloseAndDelete();  //close on empty line(only "\n")
+        }
+    }
+
+    void OnRawData(const char * buf, size_t len)
+    {
+        if (len > 0)
+        {
+            receive_queue.push(std::string(buf, len));
         }
         else
         {
@@ -102,6 +118,21 @@ public:
     }
     void push(std::string & s) { q.push(s); }
 
+    int size() { return q.size(); }
+    bool debug;
+    bool receive_pop_if_not_empty(std::string & s)
+    {
+        if (receive_queue.empty())
+        {
+            return false;
+        }
+
+        s = receive_queue.front();
+        receive_queue.pop();
+        return true;
+    }
+
+protected:
     bool pop_if_not_empty(std::string & s)
     {
         if (q.empty())
@@ -114,11 +145,9 @@ public:
         return true;
     }
 
-    int size() { return q.size(); }
-    bool debug;
-
 private:
     std::queue<std::string> q;
+    std::queue<std::string> receive_queue;
     bool isConnected;
 };
 

@@ -29,18 +29,18 @@ ULONG CLI_CmdRegister(VOID)
 {
     CLI_BEGIN(CLI_MOUDLE_PUBLIC);
     
-    CLI_DEF_ELEMENT("$1",   "display",          PUBLIC_IDS_DIS);
+    CLI_DEF_ELEMENT("$1",   "get",              PUBLIC_IDS_DIS);
     CLI_DEF_ELEMENT("$2",   "set",              PUBLIC_IDS_SET);
-    CLI_DEF_ELEMENT("$3",   "STRING<1-16>",     PUBLIC_IDS_MOD,         MOR_PUBLIC_DIS_MOD);
-    CLI_DEF_ELEMENT("$4",   "STRING<1-16>",     PUBLIC_IDS_CONFIG,      MOR_PUBLIC_DIS_CONFIG);
+    CLI_DEF_ELEMENT("$3",   "STRING<1-32>",     PUBLIC_IDS_MOD,         MOR_PUBLIC_DIS_MOD);
+    CLI_DEF_ELEMENT("$4",   "STRING<1-32>",     PUBLIC_IDS_CONFIG,      MOR_PUBLIC_DIS_CONFIG);
     CLI_DEF_ELEMENT("$5",   "value",            PUBLIC_IDS_VALUE);
     CLI_DEF_ELEMENT("$6",   "INTEGER",          PUBLIC_IDS_VALUE_VAL,   MOR_PUBLIC_DIS_VALUE);
     CLI_DEF_ELEMENT("$7",   "address",          PUBLIC_IDS_ADDR);
     CLI_DEF_ELEMENT("$8",   "INTEGER",          PUBLIC_IDS_ADDR_VAL,    MOR_PUBLIC_DIS_ADDR);
 
 
-    CLI_DEF_CMD(" $1 $3 $4 $5 $6 [ $7 $8 ] ", PUBLIC_CMD_DIS);
-    CLI_DEF_CMD(" $2 $3 $4 $5 $6 [ $7 $8 ] ", PUBLIC_CMD_SET);
+    CLI_DEF_CMD(" $1 $3 $4 [ $7 $8 ] $5 $6 ", PUBLIC_CMD_DIS);
+    CLI_DEF_CMD(" $2 $3 $4 [ $7 $8 ] $5 $6 ", PUBLIC_CMD_SET);
     
     CLI_END;
 }
@@ -52,7 +52,7 @@ ULONG CLI_CommandGet(VOID *pData)
 {
     ULONG ulRetVal = ERROR_SUCCESS;
     CLI_CMD_PARAM_S stParam;
-    UCHAR aucBuffer[256] = {0};
+    UCHAR aucBuffer[BUF_SIZE_512] = {0};
 
     /* 定义需要解析的参数 */
     CLI_PARAM_PRASE_S astPara[] = 
@@ -75,14 +75,15 @@ ULONG CLI_CommandGet(VOID *pData)
 
     if(stParam.uiAddr == USELESS_PARA)
     {
-        ulRetVal = CLI_CmdGetValue(0, &stParam, aucBuffer, 256);
+        ulRetVal = CLI_CmdGetValue(0, &stParam, aucBuffer, BUF_SIZE_512);
         YNTEST_CHK_RET_FAILED(ulRetVal, "CLI_CmdGetValue failed.\n");
     }
     else
     {
-        ulRetVal = CLI_CmdGetValuebyAddr(0, &stParam, aucBuffer, 256);
+        ulRetVal = CLI_CmdGetValuebyAddr(0, &stParam, aucBuffer, BUF_SIZE_512);
         YNTEST_CHK_RET_FAILED(ulRetVal, "CLI_CmdGetValuebyAddr failed.\n");
     }
+    printf("%s\n",aucBuffer);
 
     return ulRetVal;
 }

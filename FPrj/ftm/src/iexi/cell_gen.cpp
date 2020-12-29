@@ -8,6 +8,7 @@ void cell_gen::recv()
     {
         rc.receive_to_end();
         pkt_q.push(rc.result());
+        stat.increase_counter("packet_up", 1);
         wait();
     }
 }

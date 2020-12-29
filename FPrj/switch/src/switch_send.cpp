@@ -27,14 +27,15 @@ Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
 #include "switch_route.h"
 #include "base64.h"
 
-#define MAX_TRANSMIT_LINK    18
+#define MAX_TRANSMIT_LINK    36
+
+extern ROUTE_S RouteTable[];
 
 using std:: cout;
 using std:: endl;
 using std:: string;
 
-ULONG g_ulLinkUsedStatus = 0x3ffff;
-
+ULONG g_ulLinkUsedStatus = 0xfffffffff;
 
 VOID UpdateLinkStatus(USHORT usLink, BOOL_T bStatus)
 {
@@ -71,7 +72,8 @@ INT EmptySearch(ULONG ulStatus, USHORT *plink)
     srand(time(0));
     for(INT loop = 0; loop < MAX_LINKS; loop++)
     {
-        if(BitMapValid(&ulStatus, loop) == true)
+        /*¿ÕÏÐÔª²éÕÒÂ·ÓÉ£¬²»ÐèÒª¿´¸ÃÁ´Â·ÊÇ·ñÓÐÐ§*/
+        if( BitMapValid(&ulStatus, loop) == true )
         {
             result.push_back(loop);
         }
@@ -131,7 +133,25 @@ VOID Transmit:: Transmit_FuncEntry()
                         SENDER("link14", 14),
                         SENDER("link15", 15),
                         SENDER("link16", 16),
-                        SENDER("link17", 17)
+                        SENDER("link17", 17),
+                        SENDER("link18", 18),
+                        SENDER("link19", 19),
+                        SENDER("link20", 20),
+                        SENDER("link21", 21),
+                        SENDER("link22", 22),
+                        SENDER("link23", 23),
+                        SENDER("link24", 24),
+                        SENDER("link25", 25),
+                        SENDER("link26", 26),
+                        SENDER("link27", 27),
+                        SENDER("link28", 28),
+                        SENDER("link29", 29),
+                        SENDER("link30", 30),
+                        SENDER("link31", 31),
+                        SENDER("link32", 32),
+                        SENDER("link33", 33),
+                        SENDER("link34", 34),
+                        SENDER("link35", 35)
                     };
 
     for(uiLoop = 0; uiLoop < MAX_TRANSMIT_LINK; uiLoop++)
@@ -160,41 +180,28 @@ VOID Transmit:: Transmit_FuncEntry()
                 case CellType::Unicast:
                 case CellType::Empty:
                 {
-                    strEncode = base64_encode((unsigned char *)InData.cell.raw_data, sizeof(InData.cell));/* base64 ±àÂë */
-                    //cout << "Send: encode Type  Unicast/Empty " << uiType << "   len " << strEncode.length() << "   datasize : " << sizeof(InData.cell) << endl;
-                    //cout << endl;
+                    strEncode = base64_encode((unsigned char *)InData.cell.raw_data, sizeof(InData.cell.raw_data));/* base64 ±àÂë */
                     break;
                 }
                 case CellType::FlowSts:
                 {
                     cell_flowsts cell_f;
-                    memset(cell_f.raw_data, 0, sizeof(cell_f));
                     InData.cell.extract(cell_f);
-                    strEncode = base64_encode((unsigned char *)cell_f.raw_data, CELL_FLOWSTS_SIZE);/* base64 ±àÂë */
-                    //cout << "Send: encode Type FlowSts " << uiType << "   len " << strEncode.length() << endl;
-                    //cout << endl;
+                    strEncode = base64_encode((unsigned char *)cell_f.raw_data, sizeof(cell_f.raw_data));/* base64 ±àÂë */
                     break;
                 }
                 case CellType::Credit:
                 {
                     cell_credit cell_c;
-                    memset(cell_c.raw_data, 0, sizeof(cell_c));
                     InData.cell.extract(cell_c);
-                    cout << "Send: encode Type Credit size " << sizeof(cell_c) << endl;
-                    strEncode = base64_encode((unsigned char *)cell_c.raw_data, CELL_CREDIT_SIZE);/* base64 ±àÂë */
-                    //cout << "Send: encode Type Credit " << uiType << "   len " << strEncode.length() << endl;
-                    //cout << endl;
+                    strEncode = base64_encode((unsigned char *)cell_c.raw_data, sizeof(cell_c.raw_data));/* base64 ±àÂë */
                     break;
                 }
                 case CellType::Route:
                 {
                     cell_route cell_r;
-                    memset(cell_r.raw_data, 0, sizeof(cell_r));
                     InData.cell.extract(cell_r);
-                    cout << "Send: encode Type Credit size " << sizeof(cell_r) << endl;
-                    strEncode = base64_encode((unsigned char *)cell_r.raw_data, CELL_ROUTE_SIZE);/* base64 ±àÂë */
-                    cout << "Send: encode Type Route " << uiType << "   len " << strEncode.length() << endl;
-                    cout << endl;
+                    strEncode = base64_encode((unsigned char *)cell_r.raw_data, sizeof(cell_r.raw_data));/* base64 ±àÂë */
                     break;
                 }
                 default:
@@ -227,7 +234,6 @@ VOID Transmit:: Transmit_FuncEntry()
                 case CellType::Empty:
                 {
                     USHORT outlink;
-                    printf("LinkUsedStatus = 0x%x\n", g_ulLinkUsedStatus);
                     if(EmptySearch(g_ulLinkUsedStatus, &outlink) == 0)
                     {
                         Link[outlink].MsgSend(pBuffer, uiLen + 1);
@@ -258,6 +264,6 @@ VOID Transmit:: Transmit_FuncEntry()
             }
             delete [] pBuffer;
         }
-        g_ulLinkUsedStatus = 0x3ffff;
+        g_ulLinkUsedStatus = 0xfffffffff;
     }
 }

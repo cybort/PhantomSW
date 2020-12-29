@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-17 13:55:46
+ * @LastEditTime: 2020-12-26 16:46:43
  */
 #ifndef _RX_H_
 #define _RX_H_
@@ -65,6 +65,8 @@ SC_MODULE(rx)
         sensitive << clk.pos();
 
         stat.register_counter("rx_queue_size");
+        stat.register_counter("credit_grant_rx", StatCounterBase::Repeated);
+        stat.register_counter("flow_status_rx", StatCounterBase::Repeated);
 
         conf.register_config("rx_validate_reqseq");
     }

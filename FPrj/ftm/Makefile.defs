@@ -36,7 +36,7 @@ DEPS = $(patsubst %.cpp,${CUR_DIR}%.d,$(notdir ${SRCS})) $(patsubst %.c,${CUR_DI
 DEPS_POS = $(addprefix $(DIR_OBJ),$(DEPS))
 
 CFLAGS += -DSC_USE_STD_STRING -MD `../third-party/sockets/bin/Sockets-config` -std=c++11 -Wno-deprecated-declarations
-CC = g++
+CC = /usr/local/bin/g++5
 
 EXE    = $(MODULE)
 
@@ -45,7 +45,7 @@ EXE    = $(MODULE)
 $(EXE): $(OBJS) $(OBJS_C) $(SYSTEMC)/lib-$(TARGET_ARCH)/libsystemc.a $(SCML)/lib-$(TARGET_ARCH)/libscml2.a
 	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
 	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
-	$(CC) $(CFLAGS) $(INCDIR) $(LIBDIR) -o $(DIR_BIN)$@ $(OBJS) $(OBJS_C) $(LIBS) -g -rdynamic
+	$(CC) $(CFLAGS) $(INCDIR) $(LIBDIR) -o $(DIR_BIN)$@ $(OBJS) $(OBJS_C) $(LIBS) -g -rdynamic #-static
 
 $(OBJS):$(DIR_OBJ)%.o:%.cpp
 	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\

@@ -73,10 +73,10 @@ namespace SourceType
 {
 enum sourceType
 {
-    FTM = 0,
-    FS1,
-    FS2, 
-    FS3
+    FAP = 0,
+    FE1,
+    FE2,
+    FE3
 };
 }
 

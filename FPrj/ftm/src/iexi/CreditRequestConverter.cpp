@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-12-15 17:48:52
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-15 17:51:39
+ * @LastEditTime: 2020-12-26 15:19:00
  */
 #include "CreditRequestConverter.h"
 #include "port.h"
@@ -23,6 +23,8 @@ void CreditRequestConverter::convert()
             c.request_id(current_seq);
             c.dest_id(current_request.get_dest_tm_id());
             c.source_id(SRC_TM_ID);
+            if (SRC_TM_ID == 0) c.dest_id(1);
+            else c.dest_id(0);
 
             cell_request.write(c);
             valid_cell_request.write(true);

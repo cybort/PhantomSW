@@ -109,7 +109,7 @@ INT main(VOID)
     }
     /* Initialize end */
     printf("\n*************************************************************************\n");
-    printf("*                       Formula Software Platform                        *\n");
+    printf("*                       Formula Software Platform                       *\n");
     printf("*************************************************************************\n\n");
     while(1)
     {

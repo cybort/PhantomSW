@@ -1,8 +1,8 @@
 /*
  * @Author: duyang
  * @Date: 2020-11-07 10:06:20
- * @LastEditTime: 2020-11-26 16:58:56
- * @LastEditors: duyang
+ * @LastEditTime: 2020-12-28 18:00:11
+ * @LastEditors: f21538
  * @Description: In User Settings Edit
  */
 
@@ -14,16 +14,17 @@
 
 void Interface::recv_from_tc()
 {
-    IPacket             pkt_temp1;
-    FPacket             pkt_temp3;
-    std::string         str, str1;
-    IHeader             itmh;
-    FHeader             ftmh;
-    IHeader::Type       type;
-    unsigned            tmp;
-    pd                  tmppd;
-    QueueSocketHandler<std::string>             h;
-    ListenSocket<ServerSocket<std::string> >    *sockets; 
+    IPacket pkt_temp1;
+    FPacket pkt_temp3;
+    std::string str, str1;
+    IHeader itmh;
+    FHeader ftmh;
+    IHeader::Type type;
+    unsigned tmp;
+    pd tmppd;
+    sc_time period(20, SC_MS);
+    QueueSocketHandler<std::string> h;
+    ListenSocket<ServerSocket<std::string> > * sockets;
 
     sockets = new ListenSocket<ServerSocket<std::string> >(h);
     if (sockets->Bind(STREAM_SEND_PORT, 20))
@@ -39,7 +40,6 @@ void Interface::recv_from_tc()
     {
         h.Select(0, 1);
 
-        //if(h.size()> 4 && h.pop_if_not_empty(str))
         if (h.pop_if_not_empty(str))
         {
             do
@@ -53,8 +53,8 @@ void Interface::recv_from_tc()
                     itmh = pkt_temp1.get_itmh();
                     type = itmh.get_type();
                     ftmh.set_packet_size(str1.size());
-                    ftmh.set_ver(_TM_ID_);
-                    ftmh.set_src_tm_id(_VERSION_);
+                    ftmh.set_ver(_VERSION_);
+                    ftmh.set_src_tm_id(_TM_ID_);
 
                     if (type == IHeader::TDM)
                     {
@@ -111,7 +111,9 @@ void Interface::recv_from_tc()
             } while (h.pop_if_not_empty(str));
         }
 
-        wait();
+        keeper.inc(period);
+        if (keeper.need_sync())
+            keeper.sync();
     }
 
     delete sockets;
@@ -119,8 +121,8 @@ void Interface::recv_from_tc()
 
 void Interface::send_to_qcu()
 {
-    std::string     pkt_str;
-    int             ret = 0;
+    std::string pkt_str;
+    int ret = 0;
 
     while (true)
     {
@@ -152,10 +154,10 @@ void Interface::qin_request()
 {
     while (true)
     {
-        valid_pd.write(false);
 
         if (wred_rd.read() == true)
         {
+            log.prefix() << "read" << std::endl;
             if (pdFifo.empty() != true)
             {
                 pd_out.write(pdFifo.front());
@@ -168,6 +170,10 @@ void Interface::qin_request()
                 //               std::cout << "pd fifo empty" << std::endl;
             }
         }
+        else
+        {
+            valid_pd.write(false);
+        }
 
         wait();
     }
@@ -175,15 +181,14 @@ void Interface::qin_request()
 
 void Interface::recv_from_tm()
 {
-    /*
+
     FPacket recv_packet;
-    re.set_debug(true);
+    re.set_debug(false);
     while (true)
     {
         re.receive_to_end();
         recv_packet.set_bytes(re.result());
-        std::cout<<"receive data:" << re.result() <<std::endl;
+        log.prefix() << "receive data:" << re.result() << std::endl;
         wait();
     }
-    */
 }

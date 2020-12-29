@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-26 14:12:04
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 15:34:49
+ * @LastEditTime: 2020-12-26 17:47:58
  */
 #ifndef _STAT_MODULE_H_
 #define _STAT_MODULE_H_
@@ -52,10 +52,15 @@ SC_MODULE(stat_module)
                     int num = StatCounterBase::GetInstance().retrieve_counter_size(module, counter);
                     for (int i = 0; i < num; i++)
                     {
-                        log.prefix() << "Module: " << std::setw(30) << module << " Counter: " << std::setw(30)
+                        int num = StatCounterBase::GetInstance().retrieve_counter(module, counter, i);
+                        if (num != 0) 
+                        {
+                            log.prefix() << "Module: " << std::setw(30) << module << " Counter: " << std::setw(30)
                                      << counter << " Addr: " << i << " Value: "
-                                     << StatCounterBase::GetInstance().retrieve_counter(module, counter, i)
+                                     << num
                                      << std::endl;
+                        }
+                        
                     }
                 }
             }

@@ -3,19 +3,19 @@
  * @Author: f21538
  * @Date: 2020-12-01 11:09:07
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 14:31:26
+ * @LastEditTime: 2020-12-28 15:34:49
  */
 #include "BufferManager.h"
 //#include "ConfigInterface.h"
 #include "ConfigDB.h"
 #include "ConfigResolver.h"
+#include "Interface.h"
 #include "QueueControlUnit.h"
 #include "config.h"
 #include "pd.h"
 #include "stat_module.h"
 #include "switch_interface.h"
 #include "testbench.h"
-#include "Interface.h"
 #include "wred.h"
 
 #include "clock_step.h"
@@ -99,16 +99,17 @@ int sc_main(int argc, char * argv[])
 
     testbench tb("testbench");
     tb.clk(clk);
-    // tb.sop(pkt_sop_up);
-    // tb.eop(pkt_eop_up);
-    // tb.valid_pkt(pkt_valid_up);
-    // tb.packet(packet_up);
-    // tb.mod(pkt_mod_up);
-    tb.sop_r(pkt_sop_down);
-    tb.eop_r(pkt_eop_down);
-    tb.valid_pkt_r(pkt_valid_down);
-    tb.packet_r(packet_down);
-    tb.mod_r(pkt_mod_down);
+    tb.sop_r_up(sop_sender_to_voq_manager);
+    tb.eop_r_up(eop_sender_to_voq_manager);
+    tb.valid_pkt_r_up(packet_valid_sender_to_voq_manager);
+    tb.packet_r_up(packet_sender_to_voq_manager);
+    tb.mod_r_up(mod_sender_to_voq_manager);
+
+    tb.sop_r_down(pkt_sop_down);
+    tb.eop_r_down(pkt_eop_down);
+    tb.valid_pkt_r_down(pkt_valid_down);
+    tb.packet_r_down(packet_down);
+    tb.mod_r_down(pkt_mod_down);
 
     switch_interface si("switch_interface");
     si.clk(clk);
@@ -131,7 +132,7 @@ int sc_main(int argc, char * argv[])
     si.credit_info_out(credit_info_down);
     si.valid_credit_info_out(credit_info_down_valid);
 
-    si.t.shuffle_depth = 0; // 85;
+    si.t.shuffle_depth = 10; // 85;
     si.cr.cell_resolve_wait_time = 300;
     si.cr.packet_wait_threshold = 80;
 
@@ -162,13 +163,12 @@ int sc_main(int argc, char * argv[])
     nif.mod_out(mod_sender_to_voq_manager);
     nif.sls_out(packet_sender_to_voq_manager);
     nif.packet_read(voq_manager_packet_read);
-    /*
-        vrx.sop_in(sop);
-        vrx.eop_in(eop);
-        vrx.validSlice_in(valid);
-        vrx.mod_in(mod);
-        vrx.sls_in(data);
-    */
+
+    nif.sop_in(pkt_sop_down);
+    nif.eop_in(pkt_eop_down);
+    nif.validSlice_in(pkt_valid_down);
+    nif.mod_in(pkt_mod_down);
+    nif.sls_in(packet_down);
 
     wred_ins.clk(clk);
     wred_ins.rd_rqst(wred_rd);
@@ -179,7 +179,6 @@ int sc_main(int argc, char * argv[])
     wred_ins.pd_fc(packet_descriptor_fc);
     wred_ins.dq_report_valid(valid_report);
     wred_ins.dq_report(report);
-    
 
     qcu.clk(clk);
     qcu.packet_in(packet_sender_to_voq_manager);

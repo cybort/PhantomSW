@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-17 15:59:44
+ * @LastEditTime: 2020-12-26 16:38:43
  */
 #include "rx.h"
 
@@ -136,8 +136,11 @@ void rx::ctrl_info()
             FlowStatusMessage status;
             status.set_flow_id(temp_flowsts.flow_id());
             status.set_status((FlowStatus)temp_flowsts.request());
+            status.set_dest_tm_id(temp_flowsts.dest_id());
+            status.set_src_tm_id(temp_flowsts.source_id());
             flow_status_out.write(status);
             valid_flow_status_out.write(true);
+            stat.increase_counter("flow_status_rx", temp_flowsts.dest_id(), 1);
         }
     }
     else
@@ -151,9 +154,12 @@ void rx::ctrl_info()
         temp_credit.dump_header("rx:", log.prefix());
         CreditInfo info;
         info.set_flow_id(temp_credit.flow_id());
+        info.set_dest_tm_id(temp_credit.dest_id());
+        info.set_src_tm_id(temp_credit.source_id());
         info.set_credit(256);
         credit_info_out.write(info);
         valid_credit_info_out.write(true);
+        stat.increase_counter("credit_grant_rx", temp_credit.dest_id(), 1);
     }
     else
     {

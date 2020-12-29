@@ -110,8 +110,6 @@ public:
         queue_manager.dequeue_report_to_cavd_out(dequeue_report_to_cavd_out);
         queue_manager.dequeue_report_to_cavd_out_valid(dequeue_report_to_cavd_out_valid);
 
-        queue_manager.init_dest_table();
-
         /*Credit Manager*/
         credit_manager.clk(clk);
         credit_manager.enqueue_report(enqueue_report);

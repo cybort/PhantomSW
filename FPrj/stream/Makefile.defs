@@ -36,8 +36,8 @@ OBJS_C = $(patsubst %.c,${DIR_OBJ}/%.o,$(notdir ${SRCS_C}))
 DEPS = $(patsubst %.cpp,${DIR_OBJ}/%.d,$(notdir ${SRCS}))
 DEPS_C = $(patsubst %.c,${DIR_OBJ}/%.d,$(notdir ${SRCS_C}))
 
-CFLAGS += -DSC_USE_STD_STRING -MD `../third-party/sockets/bin/Sockets-config`  -std=c++11 -Wno-deprecated-declarations
-CC = g++
+CFLAGS += -g -DSC_USE_STD_STRING -MD `../third-party/sockets/bin/Sockets-config`  -std=c++11 -Wno-deprecated-declarations
+CC = g++5
 
 EXE    = $(MODULE)
 

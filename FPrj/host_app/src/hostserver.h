@@ -7,8 +7,8 @@ extern "C" {
 
 typedef struct tagCLI_CMD_PARAM
 {
-    CHAR acModName[32];
-    CHAR acConfigName[32];
+    CHAR acModName[64];
+    CHAR acConfigName[64];
     UINT uiValue;
     UINT uiAddr;
 }CLI_CMD_PARAM_S;

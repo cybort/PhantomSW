@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 14:23:02
+ * @LastEditTime: 2020-12-28 15:41:53
  */
 #include "testbench.h"
 #include <cstdlib>
@@ -35,17 +35,27 @@
 
 }*/
 
-void testbench::recv_pkt()
+void testbench::recv_pkt_up()
 {
     while (true)
     {
-        rx.receive_to_end();
-        stat.increase_counter("received_packet_num", 1);
-        if (stat.retrieve_counter("received_packet_num") == 100) // stat.retrieve_counter("init_packet_num"))
-        {
-            wait();
-            sc_stop();
-        }
+        rx_up.receive_to_end();
+        stat.increase_counter("up_from_nif_packet_num", 1);
+        wait();
+    }
+}
+
+void testbench::recv_pkt_down()
+{
+    while (true)
+    {
+        rx_down.receive_to_end();
+        stat.increase_counter("down_to_nif_packet_num", 1);
+        // if (stat.retrieve_counter("received_packet_num") == 100) // stat.retrieve_counter("init_packet_num"))
+        //{
+        //    wait();
+        //    sc_stop();
+        //}
         wait();
     }
 }

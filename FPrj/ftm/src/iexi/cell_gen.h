@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 11:25:07
+ * @LastEditTime: 2020-12-26 14:55:14
  */
 #ifndef _CELL_GEN_H_
 #define _CELL_GEN_H_
@@ -78,6 +78,7 @@ SC_MODULE(cell_gen)
         stat.register_counter("packet_waiting_split");             // pkt_q
         stat.register_counter("cell_waiting_transfer");            // cell_q
         stat.register_counter("cell_waiting_transfer_by_packets"); // cell_num_q
+        stat.register_counter("packet_up");
     }
 };
 

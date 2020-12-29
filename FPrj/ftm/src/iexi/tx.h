@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-21 09:36:56
+ * @LastEditTime: 2020-12-28 14:56:53
  */
 #ifndef _TX_H_
 #define _TX_H_
@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <vector>
+
 
 SC_MODULE(tx)
 {
@@ -42,6 +43,8 @@ SC_MODULE(tx)
     std::vector<SocketHandler> h;
     std::vector<bool> used;
     std::vector<ClientSocketLong<cell> *> cc;
+    std::string link_ip[36];
+    int link_port[36];
 
     int current_t;
     int used_num;
@@ -65,7 +68,7 @@ SC_MODULE(tx)
         : debug(false), log(name()), stat(name()), shuffle_depth(0), cc(SEND_SOCKETS_NUM), used(SEND_SOCKETS_NUM),
           h(SEND_SOCKETS_NUM)
     {
-        tlm_utils::tlm_quantumkeeper::set_global_quantum(sc_time(10, SC_MS));
+        tlm_utils::tlm_quantumkeeper::set_global_quantum(sc_time(20, SC_MS));
         keeper.reset();
         SC_METHOD(sch);
         sensitive << clk.pos();
@@ -82,6 +85,42 @@ SC_MODULE(tx)
         current_clock = 0;
         last_clock = 0;
 
+        /*just for 2+2*/
+        /*for (int i = 0; i < 18; i++)
+        {
+            link_ip[i] = SW0_IP;
+        }
+        for (int i = 18; i < 36; i++)
+        {
+            link_ip[i] = SW1_IP;
+        }
+        for (int i = 0; i < 18; i++)
+        {
+            link_port[i] = SW_BA_PORT + 18*SRC_TM_ID + i;
+        }
+        for (int i = 18; i < 36; i++)
+        {
+            link_port[i] = SW_BA_PORT + 18*SRC_TM_ID + (i-18);
+        }*/
+
+        for (int i = 0; i < SEND_SOCKETS_NUM/2; i++)
+        {
+            link_ip[i] = SW0_IP;
+        }
+        for (int i = SEND_SOCKETS_NUM/2; i < SEND_SOCKETS_NUM; i++)
+        {
+            link_ip[i] = SW1_IP;
+        }
+        for (int i = 0; i < SEND_SOCKETS_NUM/2; i++)
+        {
+            link_port[i] = SW0_BA_PORT + 18*SRC_TM_ID + i;
+        }
+        for (int i = SEND_SOCKETS_NUM/2; i < SEND_SOCKETS_NUM; i++)
+        {
+            link_port[i] = SW1_BA_PORT + 18*SRC_TM_ID + (i-SEND_SOCKETS_NUM/2);
+        }
+
+
         for (int i = 0; i < SEND_SOCKETS_NUM; i++)
         {
             cc[i] = new ClientSocketLong<cell>(h[i]);
@@ -91,6 +130,8 @@ SC_MODULE(tx)
         stat.register_counter("pre_queue_size");
         stat.register_counter("shuffle_queue_size");
         stat.register_counter("transfer_queue_size");
+        stat.register_counter("flow_status_tx", StatCounterBase::Repeated);
+        stat.register_counter("credit_grant_tx", StatCounterBase::Repeated);
     }
 
     ~tx()

@@ -65,10 +65,10 @@ SC_MODULE(Receiver)
     sc_port<sc_fifo_out_if<CELL> > OUT_ProcPlane3;
     sc_in_clk CLK;
 
-    sc_out<USHORT> OUT_Link0;
-    sc_out<USHORT> OUT_Link1;
-    sc_out<USHORT> OUT_Link2;
-    sc_out<USHORT> OUT_Link3;
+    sc_port< sc_fifo_out_if<USHORT> > OUT_Link0;
+    sc_port< sc_fifo_out_if<USHORT> > OUT_Link1;
+    sc_port< sc_fifo_out_if<USHORT> > OUT_Link2;
+    sc_port< sc_fifo_out_if<USHORT> > OUT_Link3;
 
     void Recv_FuncEntry(void);
     SC_CTOR(Receiver)

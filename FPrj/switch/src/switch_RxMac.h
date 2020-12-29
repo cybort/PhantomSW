@@ -25,10 +25,10 @@ SC_MODULE(RxMac)
     sc_port<sc_fifo_in_if<CELL> > IN_ProcPlane1;
     sc_port<sc_fifo_in_if<CELL> > IN_ProcPlane2;
     sc_port<sc_fifo_in_if<CELL> > IN_ProcPlane3;
-    sc_in<USHORT> IN_Link0;
-    sc_in<USHORT> IN_Link1;
-    sc_in<USHORT> IN_Link2;
-    sc_in<USHORT> IN_Link3;
+    sc_port< sc_fifo_in_if<USHORT> > IN_Link0;
+    sc_port< sc_fifo_in_if<USHORT> > IN_Link1;
+    sc_port< sc_fifo_in_if<USHORT> > IN_Link2;
+    sc_port< sc_fifo_in_if<USHORT> > IN_Link3;
 
     /*数据信元处理*/
     sc_out<bool> OUT_Valid0;
@@ -54,22 +54,18 @@ SC_MODULE(RxMac)
     sc_out<bool> OUT_Ctl_Valid0;
     sc_out<sc_uint<4> > OUT_Ctl_Type0;
     sc_out<CELL> OUT_Ctl_Packet0;
-    sc_out<USHORT> OUT_Ctl_Link0;
 
     sc_out<bool> OUT_Ctl_Valid1;
     sc_out<sc_uint<4> > OUT_Ctl_Type1;
     sc_out<CELL> OUT_Ctl_Packet1;
-    sc_out<USHORT> OUT_Ctl_Link1;
 
     sc_out<bool> OUT_Ctl_Valid2;
     sc_out<sc_uint<4> > OUT_Ctl_Type2;
     sc_out<CELL> OUT_Ctl_Packet2;
-    sc_out<USHORT> OUT_Ctl_Link2;
 
     sc_out<bool> OUT_Ctl_Valid3;
     sc_out<sc_uint<4> > OUT_Ctl_Type3;
     sc_out<CELL> OUT_Ctl_Packet3;
-    sc_out<USHORT> OUT_Ctl_Link3;
 
     sc_in_clk CLK;
     sc_mutex mutex;
@@ -80,6 +76,7 @@ SC_MODULE(RxMac)
     void RxMac_ProcPlane1Func();
     void RxMac_ProcPlane2Func();
     void RxMac_ProcPlane3Func();
+    void RxMac_Update_LinkStatus();
 
     SC_CTOR(RxMac)
     {
@@ -93,6 +90,9 @@ SC_MODULE(RxMac)
         sensitive << CLK.pos();
 
         SC_THREAD(RxMac_ProcPlane3Func);
+        sensitive << CLK.pos();
+
+        SC_THREAD(RxMac_Update_LinkStatus);
         sensitive << CLK.pos();
 
         uiCount = 0;

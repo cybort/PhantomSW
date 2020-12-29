@@ -1,150 +1,36 @@
 #include "ClientServer.h"
 #include "cstring"
 #include "port.h"
-#include "systemc.h"
-#include "tlm_utils/tlm_quantumkeeper.h"
+#include "stream.h"
+//#include "tlm_utils/tlm_quantumkeeper.h"
+#include "list.h"
 #include "unistd.h"
 #include "xmlparse.h"
 #include <SocketHandler.h>
 #include <cstdlib>
 #include <iostream>
-#include <pthread.h>
 
-STREAM_S ST;
-
-bool quit_app = false;
-bool run = false;
-bool load = false;
-
-int Gap()
-{
-    int gap = 1;
-    std::string payload;
-    payload = ST.pktdata.get_payload();
-
-    if (ST.streamtype == 0)
-    {
-        gap = ST.loadpersec * _LOAD_RES_ / payload.size() * 8;
-        if (gap == 0)
-        {
-            std::cout << "  loadpersec < packet/sec ! " << std::endl;
-            gap = 1;
-        }
-        gap = _SEC_ / gap;
-    }
-    else
-    {
-        gap = _SEC_ / ST.loadpersec;
-        if (gap == 0)
-        {
-            std::cout << "burst loadpersec is beyond 1 packet/usec ! switch to 100/sec " << std::endl;
-            gap = 10000;
-        }
-    }
-
-    return gap;
-}
-
-void send_data(ISocketHandler &h, const char *str, int str_size, const char *ip, int port)
-{
-    sc_time period(1, SC_MS);
-    ClientSocket cc(h, str, str_size);
-    cc.Open(ip, port);
-    std::cout << "tx:send to " << port << std::endl;
-
-    h.Add(&cc);
-
-    h.Select(0, 1);
-
-    while (h.GetCount())
-    {
-        h.Select(0, 1);
-    }
-
-    return;
-}
-
-void *run_sendstream(void *args)
-{
-    int round = 0;
-    int ret = 0;
-    SocketHandler h;
-    XmlParse xml;
-    int packetGap = 1;
-    std::string packet;
-    std::string payload;
-
-    packet = ST.pktdata.get_bytes();
-
-    std::cout << "pkt :" << packet << " packet size :" << packet.size() << "  tm id : " << ST.TM_ID << std::endl;
-
-    packetGap = Gap();
-    std::cout << "gap : " << packetGap << std::endl;
-
-    while (!quit_app)
-    {
-        if (run == true)
-        {
-            std::cout << ">>"
-                      << "sending..." << std::endl;
-            while ((ST.burst > round) || (ST.streamtype == 0))
-            {
-                round++;
-                send_data(h, packet.c_str(), packet.size(), LOCALHOST, STREAM_SEND_PORT + ST.TM_ID);
-                if (run == 0)
-                {
-                    std::cout << ">>"
-                              << "stoping" << std::endl;
-                    break;
-                }
-                usleep(packetGap);
-            }
-            if (round >= ST.burst)
-            {
-                std::cout << " " << round << " packets sent " << std::endl;
-            }
-
-            run = false;
-            round = 0;
-            std::cout << "stopped" << std::endl;
-        }
-
-        if (load == true)
-        {
-            std::cout << "loading..." << std::endl;
-            load = false;
-            ST.reset();
-            ret = xml.parse_xml(&ST);
-            packet = ST.pktdata.get_bytes();
-            packetGap = Gap();
-            std::cout << "load ok" << std::endl;
-        }
-
-        if (quit_app)
-        {
-            pthread_exit(NULL);
-        }
-
-        sleep(2);
-    }
-
-    return NULL;
-}
-
-int sc_main(int argc, char *argv[])
+int main(int argc, char * argv[])
 {
     int ret = 0;
     std::string opt;
-    pthread_t pth;
-    XmlParse xml;
 
-    ST.reset();
+    XmlParse<List<Stream> > xml;
+    List<Stream> st_list;
 
-    ret = xml.parse_xml(&ST);
+    ret = xml.parse_xml(st_list);
     if (ret != 0)
+    {
+        std::cout << " parse error ! " << std::endl;
         return -1;
+    }
+    std::cout << " here ! " << st_list.find(0)->data.TM_ID << std::endl;
+    std::cout << std::endl << st_list.size() << ":" << st_list.find(0)->data.packet_list.size();
 
-    ret = pthread_create(&pth, NULL, run_sendstream, NULL);
+    for (int i = 0; i < st_list.size(); i++)
+    {
+        st_list.find(i)->data.stream_thread();
+    }
 
     usleep(1000);
     std::cout << std::endl
@@ -152,39 +38,53 @@ int sc_main(int argc, char *argv[])
                  "input 'quit'/'q' "
               << std::endl
               << ">>";
-    while (!quit_app)
+    while (true)
     {
         getline(cin, opt);
-        if (opt == "run" || opt == "r")
+        if (opt.substr(0,3) == "run" || opt.substr(0,1) == "r")
         {
-            run = true;
-        }
-        else if (opt == "stop" || opt == "s")
-        {
-            if (run == false)
+            for (int i = 0; i < st_list.size(); i++)
             {
-                std::cout << "already stopped ! " << std::endl << ">>";
-            }
-            else
-            {
-                run = false;
+                st_list.find(i)->data.run = true;
             }
         }
-        else if (opt == "load" || opt == "l")
+        else if (opt.substr(0,4)== "stop" || opt.substr(0,1) == "s")
         {
-            load = true;
+            for (int i = 0; i < st_list.size(); i++)
+            {
+                st_list.find(i)->data.run = false;
+            }
         }
-        else if (opt == "help" || opt == "h")
+        else if (opt.substr(0,4) == "load" || opt.substr(0,1) == "l")
+        {
+            for (int i = 0; i < st_list.size(); i++)
+            {
+                st_list.find(i)->data.thread_stop();
+            }
+
+            ret = xml.parse_xml(st_list);
+            if (ret != 0)
+            {
+                std::cout << " parse error ! " << std::endl;
+                return -1;
+            }
+
+            for (int i = 0; i < st_list.size(); i++)
+            {
+                st_list.find(i)->data.stream_thread();
+            }
+        }
+        else if (opt.substr(0,4) == "help" || opt.substr(0,1) == "h")
         {
             std::cout << "send pakcet input 'run'/'r' ; stop send input 'stop'/'s' ; reload packet input 'load'/'s' "
                          ";exit input 'quit'/'q' "
                       << std::endl
                       << ">>";
         }
-        else if (opt == "quit" || opt == "q")
+        else if (opt.substr(0,4)  == "quit" || opt.substr(0,1)  == "q")
         {
-            quit_app = true;
             std::cout << "ready to exit ! " << std::endl;
+            break;
         }
         else
         {
@@ -192,6 +92,11 @@ int sc_main(int argc, char *argv[])
         }
     }
 
-    pthread_join(pth, NULL);
+    for (int i = 0; i < st_list.size(); i++)
+    {
+        st_list.find(i)->data.thread_stop();
+    }
+
+
     return 0;
 }

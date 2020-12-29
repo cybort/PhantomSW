@@ -2,13 +2,14 @@
  * @Author: your name
  * @Date: 2020-11-30 16:53:13
  * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-12-03 11:18:32
+ * @LastEditTime: 2020-12-26 17:34:35
  * @Description: file content
  */
 #ifndef _QUEUE_MANAGER_H_
 #define _QUEUE_MANAGER_H_
 #include "DeQueueCommand.h"
 #include "DeQueueReport.h"
+#include "DestinationTable.h"
 #include "EnQueueReport.h"
 #include "Exception.h"
 #include "Fifo.hpp"
@@ -16,6 +17,7 @@
 #include "MultiClockReceiver.h"
 #include "MultiClockTransmitter.h"
 #include "Packet.h"
+#include "StatCounter.h"
 #include "config.h"
 #include "pd.h"
 #include "systemc.h"
@@ -72,8 +74,8 @@ SC_MODULE(QueueManager)
 
     std::queue<pd> queues[VOQ_NUM];
     unsigned queue_sizes[VOQ_NUM];
-    unsigned destination_table[VOQ_NUM];
     ModuleLog log;
+    StatCounter stat_counter;
 
     void recv_packet();
     void trans_packet();
@@ -81,14 +83,13 @@ SC_MODULE(QueueManager)
     void filt();
     void enqueue();
     void dequeue();
-    void init_dest_table();
 
     SC_CTOR(QueueManager)
         : trs(packet_out, packet_out_valid, packet_out_sop, packet_out_eop, packet_out_mod),
-          recv(packet_in, packet_in_valid, packet_in_sop, packet_in_eop, packet_in_mod), log(name())
+          recv(packet_in, packet_in_valid, packet_in_sop, packet_in_eop, packet_in_mod), log(name()),
+          stat_counter("name")
     {
         memset(queue_sizes, 0, sizeof(int) * VOQ_NUM);
-        memset(destination_table, 0, sizeof(int) * VOQ_NUM);
         SC_THREAD(recv_packet);
         sensitive << clk.pos();
         SC_THREAD(trans_packet);
@@ -101,6 +102,8 @@ SC_MODULE(QueueManager)
         sensitive << clk.pos();
         SC_METHOD(recv_packet_descriptor);
         sensitive << clk.pos();
+        stat_counter.register_counter("enqueue", StatCounterBase::Repeated);
+        stat_counter.register_counter("dequeue", StatCounterBase::Repeated);
     }
 };
 

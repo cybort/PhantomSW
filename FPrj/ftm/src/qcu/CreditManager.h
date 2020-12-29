@@ -2,7 +2,7 @@
  * @Author: your name
  * @Date: 2020-11-30 09:20:25
  * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-11-30 16:16:51
+ * @LastEditTime: 2020-12-26 17:20:43
  * @Description: file content
  */
 #ifndef _CREDIT_MANAGER_H_
@@ -11,10 +11,12 @@
 #include "CreditInfo.h"
 #include "DeQueueCommand.h"
 #include "DeQueueReport.h"
+#include "DestinationTable.h"
 #include "EnQueueReport.h"
 #include "Exception.h"
 #include "FlowStatusMessage.h"
 #include "ModuleLog.h"
+#include "StatCounter.h"
 
 #define CREDIT_MANAGER_QUEUE_NUM (96 * 1024)
 #define CREDIT_MANAGER_CREDIT_RESOLUTION_4 4 // 4B
@@ -36,13 +38,14 @@ SC_MODULE(CreditManager)
     int credit_balance[CREDIT_MANAGER_QUEUE_NUM];
     unsigned queue_size[CREDIT_MANAGER_QUEUE_NUM];
     ModuleLog log;
+    StatCounter stat_counter;
 
     void dequeue_sch();
     void dequeue_report_event();
     void enqueue_report_event();
     void credit_apply();
     void credit_accept();
-    SC_CTOR(CreditManager) : log(name())
+    SC_CTOR(CreditManager) : log(name()), stat_counter(name())
     {
         SC_METHOD(enqueue_report_event);
         sensitive << clk.pos();
@@ -56,6 +59,8 @@ SC_MODULE(CreditManager)
         sensitive << clk.pos();
         memset(credit_balance, 0, sizeof(int) * CREDIT_MANAGER_QUEUE_NUM);
         memset(queue_size, 0, sizeof(unsigned) * CREDIT_MANAGER_QUEUE_NUM);
+        stat_counter.register_counter("flow status msg", StatCounterBase::Repeated);
+        stat_counter.register_counter("credit recv");
     }
 };
 

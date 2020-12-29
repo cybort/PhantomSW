@@ -70,10 +70,10 @@ int sc_main(int argc, char **argv)
     sc_fifo<CELL> RX_FIFO1(MAX_FIFO_SIZE);
     sc_fifo<CELL> RX_FIFO2(MAX_FIFO_SIZE);
     sc_fifo<CELL> RX_FIFO3(MAX_FIFO_SIZE);
-    sc_signal<USHORT> REC2RX_LINK0;
-    sc_signal<USHORT> REC2RX_LINK1;
-    sc_signal<USHORT> REC2RX_LINK2;
-    sc_signal<USHORT> REC2RX_LINK3;
+    sc_fifo<USHORT> REC2RX_LINK0;
+    sc_fifo<USHORT> REC2RX_LINK1;
+    sc_fifo<USHORT> REC2RX_LINK2;
+    sc_fifo<USHORT> REC2RX_LINK3;
 
     sc_fifo<PACKET> TX_FIFO(MAX_FIFO_SIZE);
 
@@ -97,22 +97,18 @@ int sc_main(int argc, char **argv)
     sc_signal<bool> RX2CFU_VALID0;
     sc_signal<sc_uint<4> > RX2CFU_TYPE0;
     sc_signal<CELL> RX2CFU_DATA0;
-    sc_signal<USHORT> RX2CFU_LINK0;
 
     sc_signal<bool> RX2CFU_VALID1;
     sc_signal<sc_uint<4> > RX2CFU_TYPE1;
     sc_signal<CELL> RX2CFU_DATA1;
-    sc_signal<USHORT> RX2CFU_LINK1;
 
     sc_signal<bool> RX2CFU_VALID2;
     sc_signal<sc_uint<4> > RX2CFU_TYPE2;
     sc_signal<CELL> RX2CFU_DATA2;
-    sc_signal<USHORT> RX2CFU_LINK2;
 
     sc_signal<bool> RX2CFU_VALID3;
     sc_signal<sc_uint<4> > RX2CFU_TYPE3;
     sc_signal<CELL> RX2CFU_DATA3;
-    sc_signal<USHORT> RX2CFU_LINK3;
 
     sc_signal<bool> ROUTE2TX_VALID0;
     sc_signal<bool> ROUTE2TX_VALID1;
@@ -181,9 +177,9 @@ int sc_main(int argc, char **argv)
 
     sc_set_time_resolution(1, SC_MS);
     sc_clock clock1("SYNC", sc_time(10, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
-    sc_clock clock2("RECV", sc_time(2000, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
-    sc_clock clock3("PROC", sc_time(2000, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
-    sc_clock clock4("TRANSMIT", sc_time(2000, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
+    sc_clock clock2("RECV", sc_time(8, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
+    sc_clock clock3("PROC", sc_time(8, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
+    sc_clock clock4("TRANSMIT", sc_time(10, SC_MS), 0.5, sc_time(0.0, SC_MS), true);
 
     TIME SYNC("sync");
     SYNC.clk(clock1);
@@ -234,22 +230,18 @@ int sc_main(int argc, char **argv)
     RX.OUT_Ctl_Valid0(RX2CFU_VALID0);
     RX.OUT_Ctl_Type0(RX2CFU_TYPE0);
     RX.OUT_Ctl_Packet0(RX2CFU_DATA0);
-    RX.OUT_Ctl_Link0(RX2CFU_LINK0);
 
     RX.OUT_Ctl_Valid1(RX2CFU_VALID1);
     RX.OUT_Ctl_Type1(RX2CFU_TYPE1);
     RX.OUT_Ctl_Packet1(RX2CFU_DATA1);
-    RX.OUT_Ctl_Link1(RX2CFU_LINK1);
 
     RX.OUT_Ctl_Valid2(RX2CFU_VALID2);
     RX.OUT_Ctl_Type2(RX2CFU_TYPE2);
     RX.OUT_Ctl_Packet2(RX2CFU_DATA2);
-    RX.OUT_Ctl_Link2(RX2CFU_LINK2);
 
     RX.OUT_Ctl_Valid3(RX2CFU_VALID3);
     RX.OUT_Ctl_Type3(RX2CFU_TYPE3);
     RX.OUT_Ctl_Packet3(RX2CFU_DATA3);
-    RX.OUT_Ctl_Link3(RX2CFU_LINK3);
     RX.CLK(clock3);
 
     /* 路由 */
@@ -303,22 +295,18 @@ int sc_main(int argc, char **argv)
     CF.IN_Ctl_Valid0(RX2CFU_VALID0);
     CF.IN_Ctl_Packet0(RX2CFU_DATA0);
     CF.IN_Ctl_Type0(RX2CFU_TYPE0);
-    CF.IN_Ctl_Link0(RX2CFU_LINK0);
 
     CF.IN_Ctl_Valid1(RX2CFU_VALID1);
     CF.IN_Ctl_Packet1(RX2CFU_DATA1);
     CF.IN_Ctl_Type1(RX2CFU_TYPE1);
-    CF.IN_Ctl_Link1(RX2CFU_LINK1);
 
     CF.IN_Ctl_Valid2(RX2CFU_VALID2);
     CF.IN_Ctl_Packet2(RX2CFU_DATA2);
     CF.IN_Ctl_Type2(RX2CFU_TYPE2);
-    CF.IN_Ctl_Link2(RX2CFU_LINK2);
 
     CF.IN_Ctl_Valid3(RX2CFU_VALID3);
     CF.IN_Ctl_Packet3(RX2CFU_DATA3);
     CF.IN_Ctl_Type3(RX2CFU_TYPE3);
-    CF.IN_Ctl_Link3(RX2CFU_LINK3);
     CF.CLK(clock3);
 
     /*控制信元-输出-信号绑定*/

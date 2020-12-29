@@ -19,7 +19,7 @@ Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
 #ifndef _SWITCH_ROUTE_H_
 #define _SWITCH_ROUTE_H_
 
-#define MAX_LINKS           (18U)
+#define MAX_LINKS           (36U)
 #define BITS_OF_CHAR        (8U)
 #define MAX_BITMAP_COUNT    ((MAX_LINKS/BITS_OF_CHAR) + ((MAX_LINKS%BITS_OF_CHAR) ? 1 : 0))
 
@@ -39,9 +39,8 @@ struct ROUTE_S
     USHORT usIndex;
     USHORT usDestination;
     USHORT uiLinkId;
-    bool   bRouteConnect;
+    bool   bLinkValid;
     USHORT usTimeOut;
-    USHORT usTimeCount;
 };
 
 struct UNICAST_ROUTE_S
@@ -164,13 +163,9 @@ SC_MODULE(Update)
 
         SC_THREAD(Update_Route_Thread3);
         sensitive << CLK.pos();
-        
-        SC_THREAD(Update_Route_Table);/*更新路由表*/
-        sensitive << CLK.pos();
 
         dont_initialize();
     }
-    VOID Update_Route_Table();
     VOID Update_Route_Thread0();
     VOID Update_Route_Thread1();
     VOID Update_Route_Thread2();

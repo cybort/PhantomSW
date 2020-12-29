@@ -61,7 +61,6 @@ VOID Cfu::Cfu_Ctl_Thread0()
         tmp = IN_Ctl_Packet0.read();
         if(!(tmp == OldData))
         {
-            cout << "CFU: plane0 receive  control cell.\n";
             OldData = IN_Ctl_Packet0.read();
             type = IN_Ctl_Type0.read();
 
@@ -70,13 +69,10 @@ VOID Cfu::Cfu_Ctl_Thread0()
                 case CellType::FlowSts:/*不做处理，直接查表转发，与单播处理相同*/
                 {
                     cell_flowsts cell_f;
-                    memset(cell_f.raw_data, 0, sizeof(cell_f));
                     tmp.extract(cell_f);
                     dest = cell_f.dest_id();
-                    cout << "CFU: processing   1  ~" << "  dest: " << dest << endl;
                     if(UnicastSearch(dest, &outlink) == 0)
                     {
-                        cout << "CFU: processing   2  ~" << "  outlink: " << outlink << endl;
                         OUT_Ctl_Link0.write(outlink);
                         OUT_Ctl_Packet0.write(tmp);
                         OUT_Ctl_Type0.write(type);
@@ -87,13 +83,10 @@ VOID Cfu::Cfu_Ctl_Thread0()
                 case CellType::Credit:
                 {
                     cell_credit cell_c;
-                    memset(cell_c.raw_data, 0, sizeof(cell_c));
                     tmp.extract(cell_c);
                     dest = cell_c.dest_id();
-                    cout << "CFU: processing   1  ~" << "  dest: " << dest << endl;
                     if(UnicastSearch(dest, &outlink) == 0)
                     {
-                        cout << "CFU: processing   2  ~" << "  outlink: " << outlink << endl;
                         OUT_Ctl_Link0.write(outlink);
                         OUT_Ctl_Packet0.write(tmp);
                         OUT_Ctl_Type0.write(type);
@@ -103,21 +96,18 @@ VOID Cfu::Cfu_Ctl_Thread0()
                 }
                 case CellType::Route:
                 {
-                    cout << "CFU: Plane0 receive  Route cell\n";
                     cell_route cell_r;
-                    memset(cell_r.raw_data, 0, sizeof(cell_r));
                     tmp.extract(cell_r);
                     
                     BOOL blinkrc = cell_r.route_connect();/*链路是否可达*/
                     USHORT usDestId = cell_r.dest_id();
-                    USHORT usLink = IN_Ctl_Link0.read();
+                    USHORT usLink = cell_r.source_link() + usDestId * 18;
 
                     /*将相关信息传递给Update，更新路由表*/
                     OUT_Dest0.write( usDestId );
                     OUT_Link0.write( usLink );
                     OUT_RC0.write( blinkrc );
                     OUT_Valid0.write( true );
-                    cout << "CFU: out route cell. link " << usLink << endl;
 
                     /*
                         1.填充相应字段
@@ -170,7 +160,6 @@ VOID Cfu::Cfu_Ctl_Thread1()
         tmp = IN_Ctl_Packet1.read();
         if(!(tmp == OldData))
         {
-            cout << "CFU: plane1 receive  control cell\n";
             OldData = IN_Ctl_Packet1.read();
             type = IN_Ctl_Type1.read();
 
@@ -179,8 +168,8 @@ VOID Cfu::Cfu_Ctl_Thread1()
                 case CellType::FlowSts:/*不做处理，直接查表转发，与单播处理相同*/
                 {
                     cell_flowsts cell_f;
-                    memset(cell_f.raw_data, 0, sizeof(cell_f));
                     tmp.extract(cell_f);
+
                     dest = cell_f.dest_id();
                     if(UnicastSearch(dest, &outlink) == 0)
                     {
@@ -194,8 +183,8 @@ VOID Cfu::Cfu_Ctl_Thread1()
                 case CellType::Credit:
                 {
                     cell_credit cell_c;
-                    memset(cell_c.raw_data, 0, sizeof(cell_c));
                     tmp.extract(cell_c);
+
                     dest = cell_c.dest_id();
                     if(UnicastSearch(dest, &outlink) == 0)
                     {
@@ -208,14 +197,12 @@ VOID Cfu::Cfu_Ctl_Thread1()
                 }
                 case CellType::Route:
                 {
-                    cout << "CFU: Plane1 receive  Route cell\n";
                     cell_route cell_r;
-                    memset(cell_r.raw_data, 0, sizeof(cell_r));
                     tmp.extract(cell_r);
                     
                     BOOL blinkrc = cell_r.route_connect();/*链路是否可达*/
                     USHORT usDestId = cell_r.dest_id();
-                    USHORT usLink = IN_Ctl_Link0.read();
+                    USHORT usLink = cell_r.source_link() + usDestId * 18;
 
                     /*将相关信息传递给Update，更新路由表*/
                     OUT_Dest1.write( usDestId );
@@ -273,7 +260,6 @@ VOID Cfu::Cfu_Ctl_Thread2()
         tmp = IN_Ctl_Packet2.read();
         if(!(tmp == OldData))
         {
-            cout << "CFU: plane2 receive  control cell\n";
             OldData = IN_Ctl_Packet2.read();
             type = IN_Ctl_Type2.read();
 
@@ -282,7 +268,6 @@ VOID Cfu::Cfu_Ctl_Thread2()
                 case CellType::FlowSts:/*不做处理，直接查表转发，与单播处理相同*/
                 {
                     cell_flowsts cell_f;
-                    memset(cell_f.raw_data, 0, sizeof(cell_f));
                     tmp.extract(cell_f);
                     dest = cell_f.dest_id();
                     if(UnicastSearch(dest, &outlink) == 0)
@@ -297,7 +282,6 @@ VOID Cfu::Cfu_Ctl_Thread2()
                 case CellType::Credit:
                 {
                     cell_credit cell_c;
-                    memset(cell_c.raw_data, 0, sizeof(cell_c));
                     tmp.extract(cell_c);
                     dest = cell_c.dest_id();
                     if(UnicastSearch(dest, &outlink) == 0)
@@ -311,14 +295,12 @@ VOID Cfu::Cfu_Ctl_Thread2()
                 }
                 case CellType::Route:
                 {
-                    cout << "CFU: Plane2 receive  Route cell\n";
                     cell_route cell_r;
-                    memset(cell_r.raw_data, 0, sizeof(cell_r));
                     tmp.extract(cell_r);
                     
                     BOOL blinkrc = cell_r.route_connect();/*链路是否可达*/
                     USHORT usDestId = cell_r.dest_id();
-                    USHORT usLink = IN_Ctl_Link0.read();
+                    USHORT usLink = cell_r.source_link() + usDestId * 18;
 
                     /*将相关信息传递给Update，更新路由表*/
                     OUT_Dest2.write( usDestId );
@@ -376,7 +358,6 @@ VOID Cfu::Cfu_Ctl_Thread3()
         tmp = IN_Ctl_Packet3.read();
         if(!(tmp == OldData))
         {
-            cout << "CFU: plane3 receive  control cell\n";
             OldData = IN_Ctl_Packet3.read();
             type = IN_Ctl_Type3.read();
 
@@ -385,7 +366,6 @@ VOID Cfu::Cfu_Ctl_Thread3()
                 case CellType::FlowSts:/*不做处理，直接查表转发，与单播处理相同*/
                 {
                     cell_flowsts cell_f;
-                    memset(cell_f.raw_data, 0, sizeof(cell_f));
                     tmp.extract(cell_f);
                     dest = cell_f.dest_id();
                     if(UnicastSearch(dest, &outlink) == 0)
@@ -400,7 +380,6 @@ VOID Cfu::Cfu_Ctl_Thread3()
                 case CellType::Credit:
                 {
                     cell_credit cell_c;
-                    memset(cell_c.raw_data, 0, sizeof(cell_c));
                     tmp.extract(cell_c);
                     dest = cell_c.dest_id();
                     if(UnicastSearch(dest, &outlink) == 0)
@@ -414,14 +393,12 @@ VOID Cfu::Cfu_Ctl_Thread3()
                 }
                 case CellType::Route:
                 {
-                    cout << "CFU: Plane3 receive  Route cell\n";
                     cell_route cell_r;
-                    memset(cell_r.raw_data, 0, sizeof(cell_r));
                     tmp.extract(cell_r);
 
                     BOOL blinkrc = cell_r.route_connect();/*链路是否可达*/
                     USHORT usDestId = cell_r.dest_id();
-                    USHORT usLink = IN_Ctl_Link0.read();
+                    USHORT usLink = cell_r.source_link() + usDestId * 18;
 
                     /*将相关信息传递给Update，更新路由表*/
                     OUT_Dest3.write( usDestId );

@@ -57,7 +57,6 @@ VOID TxMac:: TxMac_Thread0()
         InData = IN_Packet0.read();
         if(!(InData == Old))
         {
-            cout << "Tx Mac: Recv data!" << "  type " << Type << endl;
             Old = IN_Packet0.read();
             Type = IN_Type0.read();
             Link = IN_Link0.read();
@@ -66,7 +65,7 @@ VOID TxMac:: TxMac_Thread0()
             OutData.type = Type;
             OutData.link = Link;
             OutData.bitmap = Bitmap;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -110,7 +109,7 @@ VOID TxMac:: TxMac_Thread1()
             OutData.type = Type;
             OutData.link = Link;
             OutData.bitmap = Bitmap;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -154,7 +153,7 @@ VOID TxMac:: TxMac_Thread2()
             OutData.type = Type;
             OutData.link = Link;
             OutData.bitmap = Bitmap;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -198,7 +197,7 @@ VOID TxMac:: TxMac_Thread3()
             OutData.type = Type;
             OutData.link = Link;
             OutData.bitmap = Bitmap;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -235,11 +234,10 @@ VOID TxMac:: TxMac_Ctl_Thread0()
             Old = IN_Ctl_Packet0.read();
             Type = IN_Ctl_Type0.read();
             Link = IN_Ctl_Link0.read();
-            cout << "Tx Mac: Recv data!" << "  type " << Type << endl;
 
             OutData.type = Type;
             OutData.link = Link;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -277,11 +275,10 @@ VOID TxMac:: TxMac_Ctl_Thread1()
             Old = IN_Ctl_Packet1.read();
             Type = IN_Ctl_Type1.read();
             Link = IN_Ctl_Link1.read();
-            cout << "Tx Mac: Recv data!" << "  type " << Type << endl;
 
             OutData.type = Type;
             OutData.link = Link;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -319,11 +316,10 @@ VOID TxMac:: TxMac_Ctl_Thread2()
             Old = IN_Ctl_Packet2.read();
             Type = IN_Ctl_Type2.read();
             Link = IN_Ctl_Link2.read();
-            cout << "Tx Mac: Recv data!" << "  type " << Type << endl;
 
             OutData.type = Type;
             OutData.link = Link;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);
@@ -361,11 +357,10 @@ VOID TxMac:: TxMac_Ctl_Thread3()
             Old = IN_Ctl_Packet3.read();
             Type = IN_Ctl_Type3.read();
             Link = IN_Ctl_Link3.read();
-            cout << "Tx Mac: Recv data!" << "  type " << Type << endl;
 
             OutData.type = Type;
             OutData.link = Link;
-            memcpy(OutData.cell.raw_data, InData.raw_data, CELL_SIZE);
+            memcpy(OutData.cell.raw_data, InData.raw_data, sizeof(OutData.cell.raw_data));
 
             mutex.lock();
             OUT_Packet0->write(OutData);

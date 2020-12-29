@@ -9,7 +9,7 @@ void QueueManager::recv_packet()
         {
             packet.set_bytes(recv.result());
         }
-        catch (Exception &e)
+        catch (Exception & e)
         {
             std::cout << "Exception:"
                       << " " << e.ToString() << std::endl
@@ -63,12 +63,12 @@ void QueueManager::filt()
             packet_in_fifo.pop();
             return;
         }
-        //入队，FTMH头的src_tm_id存入查找到的目标id，存入缓存
+        //入队，FTMH头的src_tm_id存入查找到的dest_tm_id，存入缓存
         else
         {
             try
             {
-                ftmh.set_src_tm_id(destination_table[packet_descriptor.get_flowID()]);
+                ftmh.set_src_tm_id(DestinationTable::get_instance().get_dest_tm_id(packet_descriptor.get_flowID()));
                 packet.set_ftmh(ftmh);
                 packet_out_fifo.push(packet);
                 packet_descriptor_process_fifo.push(packet_descriptor);
@@ -79,7 +79,7 @@ void QueueManager::filt()
                              << "packet in fifo size:"
                              << " " << packet_in_fifo.get_size() << "." << std::endl;
             }
-            catch (Exception &e)
+            catch (Exception & e)
             {
                 std::cout << "Exception:"
                           << " " << e.ToString() << std::endl
@@ -118,8 +118,9 @@ void QueueManager::enqueue()
             this->enqueue_report_out_valid.write(true);
             log.prefix() << "enqueue, "
                          << "flow id:" << packet_descriptor.get_flowID() << "." << endl;
+            stat_counter.increase_counter("enqueue", flow_id, 1);
         }
-        catch (Exception &e)
+        catch (Exception & e)
         {
             std::cout << "Exception:"
                       << " " << e.ToString() << std::endl
@@ -143,7 +144,7 @@ void QueueManager::trans_packet()
         {
             packetBytes = packet_out_fifo.pop().get_bytes();
         }
-        catch (Exception &e)
+        catch (Exception & e)
         {
             std::cout << "Exception:"
                       << " " << e.ToString() << std::endl
@@ -181,8 +182,9 @@ void QueueManager::dequeue()
                 log.prefix() << "dequeue, "
                              << "flow id:" << packet_descriptor.get_flowID() << ", "
                              << "packet size: " << packet_descriptor.get_length() << "." << endl;
+                stat_counter.increase_counter("dequeue", command.get_flow_id(), 1);
             }
-            catch (Exception &e)
+            catch (Exception & e)
             {
                 std::cout << "Exception:"
                           << " " << e.ToString() << std::endl
@@ -190,17 +192,5 @@ void QueueManager::dequeue()
                           << " " << e.Stack() << std::endl;
             }
         }
-    }
-}
-
-void QueueManager::init_dest_table()
-{
-    for (int voq = 0; voq < VOQ_NUM / 2 - 1; voq++)
-    {
-        destination_table[voq] = 1;
-    }
-    for (int voq = VOQ_NUM / 2; voq < VOQ_NUM - 1; voq++)
-    {
-        destination_table[voq] = 0;
     }
 }

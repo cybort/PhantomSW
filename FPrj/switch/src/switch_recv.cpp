@@ -35,7 +35,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-#define MAX_RECEIVE_LINK    (18)
+#define MAX_RECEIVE_LINK    (36)
 #define MAX_PLANE           (4)
 
 #if 0
@@ -324,7 +324,6 @@ VOID Receiver::Recv_FuncEntry(VOID)
     UINT uiRemain, uiReadSize;
     UINT uiTotalRead = 0;
     EVENT Notification = EVENT(100);    /* event 事件资源监视器创建 */
-    USHORT uiPlaneStatus = 0x7;//0x7-111,每个bit代表一个BLOCK
 
     /* 虚拟端口创建,类实例化对象 */
     PORT_LINK Link[MAX_RECEIVE_LINK] = {
@@ -345,7 +344,25 @@ VOID Receiver::Recv_FuncEntry(VOID)
         PORT_LINK("link14", 14),
         PORT_LINK("link15", 15),
         PORT_LINK("link16", 16),
-        PORT_LINK("link17", 17)
+        PORT_LINK("link17", 17),
+        PORT_LINK("link18", 18),
+        PORT_LINK("link19", 19),
+        PORT_LINK("link20", 20),
+        PORT_LINK("link21", 21),
+        PORT_LINK("link22", 22),
+        PORT_LINK("link23", 23),
+        PORT_LINK("link24", 24),
+        PORT_LINK("link25", 25),
+        PORT_LINK("link26", 26),
+        PORT_LINK("link27", 27),
+        PORT_LINK("link28", 28),
+        PORT_LINK("link29", 29),
+        PORT_LINK("link30", 30),
+        PORT_LINK("link31", 31),
+        PORT_LINK("link32", 32),
+        PORT_LINK("link33", 33),
+        PORT_LINK("link34", 34),
+        PORT_LINK("link35", 35),
     };
 
     /* event事件监视器初始化 */
@@ -479,21 +496,20 @@ VOID Receiver::Recv_FuncEntry(VOID)
                                       switch(uiPlane)
                                      {
                                          case 0:
-                                            cout << "Plane Index :" << uiPlane << "    recv data " << endl;
                                              OUT_ProcPlane0->write(read_data);
-                                             OUT_Link0.write( MsgLink );
+                                             OUT_Link0->write( MsgLink );
                                              break;
                                          case 1:
                                             OUT_ProcPlane1->write(read_data);
-                                            OUT_Link1.write( MsgLink );
+                                            OUT_Link1->write( MsgLink );
                                             break;
                                          case 2:
                                              OUT_ProcPlane2->write(read_data);
-                                             OUT_Link2.write( MsgLink );
+                                             OUT_Link2->write( MsgLink );
                                              break;
                                          case 3:
                                              OUT_ProcPlane3->write(read_data);
-                                             OUT_Link3.write( MsgLink );
+                                             OUT_Link3->write( MsgLink );
                                              break;
                                          default:
                                             cout << "process plane not defined.\n";

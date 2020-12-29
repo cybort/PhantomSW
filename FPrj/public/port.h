@@ -1,3 +1,10 @@
+/*
+ * @Description: 
+ * @Author: f21538
+ * @Date: 2020-12-28 14:15:55
+ * @LastEditors: f21538
+ * @LastEditTime: 2020-12-28 14:18:17
+ */
 #include "ConfigDB.h"
 #include "ConfigResolver.h"
 // socket
@@ -15,6 +22,12 @@
 #define STREAM_SEND_BASE_PORT (ConfigResolver::GetInstance().get_int("port", "STREAM_SEND_BASE_PORT", 12000))
 #define HOST_PORT (ConfigResolver::GetInstance().get_int("port", "HOST_PORT", 13000))
 #define STREAM_SEND_PORT (STREAM_SEND_BASE_PORT + SRC_TM_ID)
+
+/*2+2 predefine*/
+#define SW0_IP (ConfigResolver::GetInstance().get_string("port", "SW0_IP", "127.0.0.1"))//"10.114.20.107"
+#define SW1_IP (ConfigResolver::GetInstance().get_string("port", "SW1_IP", "127.0.0.1"))//"10.114.20.169"
+#define SW0_BA_PORT (SW_BASE_SERVER_PORT)
+#define SW1_BA_PORT (ConfigResolver::GetInstance().get_int("port", "SW1_BASE_SERVER_PORT", 12000))
 
 #define SRC_TM_ID (ConfigResolver::GetInstance().get_int("port", "SRC_TM_ID", 0))
 
