@@ -14,13 +14,14 @@
          .c_str()) //"10.114.220.163" //"127.0.0.1"
 #define SW_IP                                                                                                          \
     (ConfigResolver::GetInstance().get_string("port", "SW_IP", "127.0.0.1").c_str()) //"10.114.220.163"//"10.132.52.54"
+#define HOST_IP (ConfigResolver::GetInstance().get_string("port", "HOST_IP", "127.0.0.1").c_str())
 #define LISTEN_SOCKETS_NUM (ConfigResolver::GetInstance().get_int("port", "LISTEN_SOCKETS_NUM", 18))
 #define SEND_SOCKETS_NUM (ConfigResolver::GetInstance().get_int("port", "SEND_SOCKETS_NUM", 18))
 #define TM_BASE_SERVER_PORT (ConfigResolver::GetInstance().get_int("port", "TM_BASE_SERVER_PORT", 10000))
 #define SW_BASE_SERVER_PORT                                                                                            \
     (ConfigResolver::GetInstance().get_int("port", "SW_BASE_SERVER_PORT", 11000)) // 10024//50001
 #define STREAM_SEND_BASE_PORT (ConfigResolver::GetInstance().get_int("port", "STREAM_SEND_BASE_PORT", 12000))
-#define HOST_PORT (ConfigResolver::GetInstance().get_int("port", "HOST_PORT", 13000))
+#define HOST_PORT (ConfigResolver::GetInstance().get_int("port", "HOST_PORT", 8888))
 #define STREAM_SEND_PORT (STREAM_SEND_BASE_PORT + SRC_TM_ID)
 
 /*2+2 predefine*/

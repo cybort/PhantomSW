@@ -1,44 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <protocaltype name="ETH">
 
-    <stream name = "fabric" type=1 bursts=20 loadpersec=100 mix=1 TM_ID=2 > <!-- TYPE: 1 burst,0 continue; mix : 0 false, 1 true. -->  
-
-        <packet name="first">
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>qdddddddddddddddddddddddddddddddddddrgggddddddddddddddddddddddddddddddddddddddddddddddddddddddddd</data>
-        </packet>
-        <packet name="first">
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>aaaaaaaadddddddddddddddddddddddddddddddddddrgdfdfdbbbbbbbbbbbbbddddddddddddddddddddddddddddddddddd</data>
-        </packet>
-        <packet name="first">
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>cccccccccccddddddddddddddddddddddddddddddddddrgfffffffffffffffffdddddddddddddddddddff</data>
-        </packet>
-
-    </stream>  
-    <stream name = "fabric" type=1 bursts=20 loadpersec=100 mix=1 TM_ID=0 > <!-- TYPE: 1 burst,0 continue; mix : 0 false, 1 true. -->
+     
+    <stream name = "fabric" type=1 bursts=5 loadpersec=20 mix=0 TM_ID=0 > <!-- TYPE: 1 burst,0 continue; mix : 0 false, 1 true. -->
 
         <packet name="first">
             <ITMH>
@@ -59,82 +23,14 @@
                 <dp>7</dp> <!-- 3 bit -->
                 <calc_len_index>31</calc_len_index> <!-- 5 bit -->
                 <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
+                <flowID>52000</flowID> <!-- 17 bit -->
             </ITMH>
             <data>s------------------------------------------------------------------------------------------------e</data>
         </packet>
-        <packet name="firt">
-            <ITMH>
-                <itmh_type>1</itmh_type> <!-- 2 bit -->
-                <rsv>2</rsv> <!-- 20 bit -->
-                <channel_num>1</channel_num> <!-- 10 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>2</itmh_type> <!-- 2 bit -->
-                <tc>2</tc> <!-- 3 bit -->
-                <dp>0</dp> <!-- 3 bit -->
-                <rsv>8</rsv> <!-- 6 bit -->
-                <multicast_ID>4</multicast_ID><!-- 18 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>s---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------e</data>
-         </packet>
-         <packet name="firt">
-            <ITMH>
-                <itmh_type>1</itmh_type> <!-- 2 bit -->
-                <rsv>2</rsv> <!-- 20 bit -->
-                <channel_num>1</channel_num> <!-- 10 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>2</itmh_type> <!-- 2 bit -->
-                <tc>2</tc> <!-- 3 bit -->
-                <dp>0</dp> <!-- 3 bit -->
-                <rsv>8</rsv> <!-- 6 bit -->
-                <multicast_ID>4</multicast_ID><!-- 18 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>s------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------e</data>
-        </packet>
-        <packet name="firt">
-            <ITMH>
-                <itmh_type>1</itmh_type> <!-- 2 bit -->
-                <rsv>2</rsv> <!-- 20 bit -->
-                <channel_num>1</channel_num> <!-- 10 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>2</itmh_type> <!-- 2 bit -->
-                <tc>2</tc> <!-- 3 bit -->
-                <dp>0</dp> <!-- 3 bit -->
-                <rsv>8</rsv> <!-- 6 bit -->
-                <multicast_ID>4</multicast_ID><!-- 18 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>13</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>s------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------e</data>
-        </packet>
+        
 
     </stream>
-    <stream name = "fabric" type=1 bursts=20 loadpersec=100 mix=1 TM_ID=1 > <!-- TYPE: 1 burst,0 continue; mix : 0 false, 1 true. -->  
+    <stream name = "fabric" type=1 bursts=5 loadpersec=20 mix=0 TM_ID=1 > <!-- TYPE: 1 burst,0 continue; mix : 0 false, 1 true. -->
 
         <packet name="first">
             <ITMH>
@@ -157,79 +53,12 @@
                 <rsv>3</rsv><!-- 2 bit -->
                 <flowID>51200</flowID> <!-- 17 bit -->
             </ITMH>
-	    <data>s------------------------------------------------------------------------------------------------e</data>
+            <data>s------------------------------------------------------------------------------------------------e</data>
         </packet>
-        <packet name="firt">
-            <ITMH>
-                <itmh_type>1</itmh_type> <!-- 2 bit -->
-                <rsv>2</rsv> <!-- 20 bit -->
-                <channel_num>1</channel_num> <!-- 10 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>2</itmh_type> <!-- 2 bit -->
-                <tc>2</tc> <!-- 3 bit -->
-                <dp>0</dp> <!-- 3 bit -->
-                <rsv>8</rsv> <!-- 6 bit -->
-                <multicast_ID>4</multicast_ID><!-- 18 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>51200</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>s---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------e</data>
-        </packet>
-        <packet name="firt">
-            <ITMH>
-                <itmh_type>1</itmh_type> <!-- 2 bit -->
-                <rsv>2</rsv> <!-- 20 bit -->
-                <channel_num>1</channel_num> <!-- 10 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>2</itmh_type> <!-- 2 bit -->
-                <tc>2</tc> <!-- 3 bit -->
-                <dp>0</dp> <!-- 3 bit -->
-                <rsv>8</rsv> <!-- 6 bit -->
-                <multicast_ID>4</multicast_ID><!-- 18 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>51200</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>s------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------e</data>
-        </packet>
-        <packet name="firt">
-            <ITMH>
-                <itmh_type>1</itmh_type> <!-- 2 bit -->
-                <rsv>2</rsv> <!-- 20 bit -->
-                <channel_num>1</channel_num> <!-- 10 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>2</itmh_type> <!-- 2 bit -->
-                <tc>2</tc> <!-- 3 bit -->
-                <dp>0</dp> <!-- 3 bit -->
-                <rsv>8</rsv> <!-- 6 bit -->
-                <multicast_ID>4</multicast_ID><!-- 18 bit -->
-            </ITMH>
-            <ITMH>
-                <itmh_type>3</itmh_type> <!-- 2 bit -->
-                <tc>7</tc> <!-- 3 bit -->
-                <dp>7</dp> <!-- 3 bit -->
-                <calc_len_index>31</calc_len_index> <!-- 5 bit -->
-                <rsv>3</rsv><!-- 2 bit -->
-                <flowID>98303</flowID> <!-- 17 bit -->
-            </ITMH>
-	    <data>s------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------e</data>
-        </packet>
+        
 
-    </stream>  
+    </stream>
+    
 
 </protocaltype>
 

@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-26 14:12:04
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-18 11:03:49
+ * @LastEditTime: 2021-01-04 13:37:09
  */
 #ifndef _STAT_COUNTER_H_
 #define _STAT_COUNTER_H_
@@ -43,10 +43,11 @@ public:
     void reset_counter(const std::string & module_name, const std::string & counter_name, int addr);   /*for repeated*/
     int retrieve_counter(const std::string & module_name, const std::string & counter_name);           /*for mono*/
     int retrieve_counter(const std::string & module_name, const std::string & counter_name, int addr); /*for repeated*/
-    int retrieve_counter_size(const std::string & module_name, const std::string & counter_name);      /*for repeated*/
 
-    std::vector<std::string> & retrieve_module_list(std::vector<std::string> & list);
-    std::vector<std::string> & retrieve_counter_list(const std::string & module_name, std::vector<std::string> & list);
+    void retrieve_module_list(std::vector<std::string> & list);
+    void retrieve_counter_list(const std::string & module_name, std::vector<std::string> & list);
+    void retrieve_counter_lines(const std::string & module_name, const std::string & counter_name,
+                                std::vector<std::pair<int, int>> & list);
 
 protected:
     std::mutex lock;
@@ -60,10 +61,10 @@ private:
     StatCounterBase(const StatCounterBase &) {}
     StatCounterBase & operator=(const StatCounterBase &) {}
 
-    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, CounterType> > counter_type_db;
-    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, int /*value*/> > counter_mono_db;
+    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, CounterType>> counter_type_db;
+    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, int /*value*/>> counter_mono_db;
     std::map<std::string /*module_name*/,
-             std::map<std::string /*register_name*/, std::map<int /*addr*/, int /*value*/> > >
+             std::map<std::string /*register_name*/, std::map<int /*addr*/, int /*value*/>>>
         counter_repeated_db;
 };
 
@@ -75,6 +76,11 @@ public:
     void register_counter(const std::string & counter_name, StatCounterBase::CounterType type = StatCounterBase::Mono)
     {
         StatCounterBase::GetInstance().register_counter(module, counter_name, type);
+    }
+
+    void retrieve_counter_list(std::vector<std::string> & container /*output*/)
+    {
+        StatCounterBase::GetInstance().retrieve_counter_list(module, container);
     }
 
     StatCounterBase::CounterType retrieve_counter_type(const std::string & counter_name)
@@ -122,9 +128,10 @@ public:
         return StatCounterBase::GetInstance().retrieve_counter(module, counter_name, addr);
     }
 
-    int retrieve_counter_size(const std::string & counter_name)
+    void retrieve_counter_lines(const std::string & counter_name,
+                                std::vector<std::pair<int /*addr*/, int /*value*/>> & container /*output*/)
     {
-        return StatCounterBase::GetInstance().retrieve_counter_size(module, counter_name);
+        StatCounterBase::GetInstance().retrieve_counter_lines(module, counter_name, container);
     }
 
 private:

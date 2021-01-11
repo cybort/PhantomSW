@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-26 14:12:04
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-18 10:38:41
+ * @LastEditTime: 2021-01-04 13:40:19
  */
 #ifndef _STAT_CONFIGDB_H_
 #define _STAT_CONFIGDB_H_
@@ -41,11 +41,11 @@ public:
     void reset_config(const std::string & module_name, const std::string & config_name, int addr);   /*for repeated*/
     int retrieve_config(const std::string & module_name, const std::string & config_name);           /*for mono*/
     int retrieve_config(const std::string & module_name, const std::string & config_name, int addr); /*for repeated*/
-    int retrieve_config_size(const std::string & module_name, const std::string & config_name);      /*for repeated*/
 
-    template <typename StringsContainer> StringsContainer & retrieve_module_list(StringsContainer & list);
-    template <typename StringsContainer>
-    StringsContainer & retrieve_config_list(const std::string & module_name, StringsContainer & list);
+    void retrieve_module_list(std::vector<std::string> & list);
+    void retrieve_config_list(const std::string & module_name, std::vector<std::string> & list);
+    void retrieve_config_lines(const std::string & module_name, const std::string & config_name,
+                               std::vector<std::pair<int, int>> & list);
 
 protected:
     std::mutex lock;
@@ -59,10 +59,10 @@ private:
     ConfigDB(const ConfigDB &) {}
     ConfigDB & operator=(const ConfigDB &) {}
 
-    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, ConfigType> > config_type_db;
-    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, int /*value*/> > config_mono_db;
+    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, ConfigType>> config_type_db;
+    std::map<std::string /*module_name*/, std::map<std::string /*register_name*/, int /*value*/>> config_mono_db;
     std::map<std::string /*module_name*/,
-             std::map<std::string /*register_name*/, std::map<int /*addr*/, int /*value*/> > >
+             std::map<std::string /*register_name*/, std::map<int /*addr*/, int /*value*/>>>
         config_repeated_db;
 };
 
@@ -74,6 +74,11 @@ public:
     void register_config(const std::string & config_name, ConfigDB::ConfigType type = ConfigDB::Mono)
     {
         ConfigDB::GetInstance().register_config(module, config_name, type);
+    }
+
+    void retrieve_config_list(std::vector<std::string> & container /*output*/)
+    {
+        ConfigDB::GetInstance().retrieve_config_list(module, container);
     }
 
     ConfigDB::ConfigType retrieve_config_type(const std::string & config_name)
@@ -108,9 +113,10 @@ public:
         return ConfigDB::GetInstance().retrieve_config(module, config_name, addr);
     }
 
-    int retrieve_config_size(const std::string & config_name)
+    void retrieve_counter_lines(const std::string & config_name,
+                                std::vector<std::pair<int /*addr*/, int /*value*/>> & container /*output*/)
     {
-        return ConfigDB::GetInstance().retrieve_config_size(module, config_name);
+        ConfigDB::GetInstance().retrieve_config_lines(module, config_name, container);
     }
 
 private:

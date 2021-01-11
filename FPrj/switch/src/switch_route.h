@@ -53,69 +53,50 @@ struct UNICAST_ROUTE_S
 SC_MODULE(Route)
 {
     /* declare in port */
-    sc_in<bool> IN_Valid0;
-    sc_in<bool> IN_Valid1;
-    sc_in<bool> IN_Valid2;
-    sc_in<bool> IN_Valid3;
-    
-    sc_in<CELL> IN_Packet0;
-    sc_in<CELL> IN_Packet1;
-    sc_in<CELL> IN_Packet2;
-    sc_in<CELL> IN_Packet3;
-    
-    sc_in<sc_uint<4> > IN_Type0;
-    sc_in<sc_uint<4> > IN_Type1;
-    sc_in<sc_uint<4> > IN_Type2;
-    sc_in<sc_uint<4> > IN_Type3;
+    sc_in<bool> IN_Valid;
+    sc_in<CELL> IN_Packet;
+    sc_in<sc_uint<4> > IN_Type;
 
     sc_in_clk CLK;
     
     /* declare out port */
-    sc_out<USHORT> OUT_Link0;
-    sc_out<USHORT> OUT_Link1;
-    sc_out<USHORT> OUT_Link2;
-    sc_out<USHORT> OUT_Link3;
-    
-    sc_out<sc_uint<4> > OUT_Type0;
-    sc_out<sc_uint<4> > OUT_Type1;
-    sc_out<sc_uint<4> > OUT_Type2;
-    sc_out<sc_uint<4> > OUT_Type3;
-    
-    sc_out<CELL> OUT_Packet0;
-    sc_out<CELL> OUT_Packet1;
-    sc_out<CELL> OUT_Packet2;
-    sc_out<CELL> OUT_Packet3;
-    
-    sc_out<bool> OUT_Valid0;
-    sc_out<bool> OUT_Valid1;
-    sc_out<bool> OUT_Valid2;
-    sc_out<bool> OUT_Valid3;
-    
-    sc_out<sc_uint<36> >OUT_Bitmap0;
-    sc_out<sc_uint<36> >OUT_Bitmap1;
-    sc_out<sc_uint<36> >OUT_Bitmap2;
-    sc_out<sc_uint<36> >OUT_Bitmap3;
+    sc_out<USHORT> OUT_Link;
+    sc_out<sc_uint<4> > OUT_Type;
+    sc_out<CELL> OUT_Packet;
+    sc_out<bool> OUT_Valid;
+    sc_out<sc_uint<36> >OUT_Bitmap;
+    sc_out<ULONG> OUT_Count;
+
+    ULONG ulBlockCount;
 
     SC_CTOR(Route)
     {
-        SC_THREAD(Route_Thread0);
+        SC_THREAD(Route_ProcFunc);
         sensitive << CLK.pos();
 
-        SC_THREAD(Route_Thread1);
-        sensitive << CLK.pos();
+        ulBlockCount = 0;
+        
+        dont_initialize();
+    }
+    VOID Route_ProcFunc();
+};
 
-        SC_THREAD(Route_Thread2);
-        sensitive << CLK.pos();
+SC_MODULE(Update)
+{
+    sc_in<USHORT>IN_Dest;
+    sc_in<USHORT>IN_Link;
+    sc_in<bool>IN_RC;
+    sc_in<bool>IN_Valid;
+    sc_in_clk CLK;
 
-        SC_THREAD(Route_Thread3);
+    SC_CTOR(Update)
+    {
+        SC_THREAD(Update_ProcFunc);
         sensitive << CLK.pos();
         
         dont_initialize();
     }
-    VOID Route_Thread0();
-    VOID Route_Thread1();
-    VOID Route_Thread2();
-    VOID Route_Thread3();
+    VOID Update_ProcFunc();
 };
 
 
@@ -126,52 +107,7 @@ bool BitMapValid(void *pDest, USHORT usPostion);
 INT UnicastSearch(USHORT dest, USHORT *plink);
 
 
-SC_MODULE(Update)
-{
-    sc_in<USHORT>IN_Dest0;
-    sc_in<USHORT>IN_Link0;
-    sc_in<bool>IN_RC0;
-    sc_in<bool>IN_Valid0;
-    sc_in_clk CLK;
 
-    sc_in<USHORT>IN_Dest1;
-    sc_in<USHORT>IN_Link1;
-    sc_in<bool>IN_RC1;
-    sc_in<bool>IN_Valid1;
-
-    sc_in<USHORT>IN_Dest2;
-    sc_in<USHORT>IN_Link2;
-    sc_in<bool>IN_RC2;
-    sc_in<bool>IN_Valid2;
-
-    sc_in<USHORT>IN_Dest3;
-    sc_in<USHORT>IN_Link3;
-    sc_in<bool>IN_RC3;
-    sc_in<bool>IN_Valid3;
-
-    SC_CTOR(Update)
-    {
-
-        SC_THREAD(Update_Route_Thread0);
-        sensitive << CLK.pos();
-        
-        SC_THREAD(Update_Route_Thread1);
-        sensitive << CLK.pos();
-
-        SC_THREAD(Update_Route_Thread2);
-        sensitive << CLK.pos();
-
-        SC_THREAD(Update_Route_Thread3);
-        sensitive << CLK.pos();
-
-        dont_initialize();
-    }
-    VOID Update_Route_Thread0();
-    VOID Update_Route_Thread1();
-    VOID Update_Route_Thread2();
-    VOID Update_Route_Thread3();
-
-};
 
 
 #endif

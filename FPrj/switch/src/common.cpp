@@ -138,7 +138,7 @@ VOID PORT_LINK::ShowInfo(VOID)
                 ERROR_FAILED        failed
  Caution      :
 *****************************************************************************/
-INT PORT_LINK::LinkUp(USHORT usPortNum)
+INT PORT_LINK::LinkUp(USHORT usPortNum, CONST CHAR *pcIPAddr)
 {
     INT iRet = ERROR_SUCCESS;
     struct sockaddr_in stSockParam;
@@ -146,7 +146,7 @@ INT PORT_LINK::LinkUp(USHORT usPortNum)
     INT iFd;
 
     stSockParam.sin_family = AF_INET;
-    stSockParam.sin_addr.s_addr = inet_addr("10.114.220.169");
+    stSockParam.sin_addr.s_addr = inet_addr(pcIPAddr);
     stSockParam.sin_port = htons(usPortNum);
     iLen = sizeof(stSockParam);
 
@@ -476,42 +476,42 @@ INT EVENT::GetWakeupEvent(VOID)
 
 TRANSMIT_PORT_INFO_S g_astPortMapInfo[MAX_NUM_OF_SWITCH] =
 {
-    {0,      11024},
-    {1,      11025},
-    {2,      11026},
-    {3,      11027},
-    {4,      11028},
-    {5,      11029},
-    {6,      11030},
-    {7,      11031},
-    {8,      11032},
-    {9,      11033},
-    {10,     11034},
-    {11,     11035},
-    {12,     11036},
-    {13,     11037},
-    {14,     11038},
-    {15,     11039},
-    {16,     11040},
-    {17,     11041},
-    {18,     11042},
-    {19,     11043},
-    {20,     11044},
-    {21,     11045},
-    {22,     11046},
-    {23,     11047},
-    {24,     11048},
-    {25,     11049},
-    {26,     11050},
-    {27,     11051},
-    {28,     11052},
-    {29,     11053},
-    {30,     11054},
-    {31,     11055},
-    {32,     11056},
-    {33,     11057},
-    {34,     11058},
-    {35,     11059},
+    {0,      11124},
+    {1,      11125},
+    {2,      11126},
+    {3,      11127},
+    {4,      11128},
+    {5,      11129},
+    {6,      11130},
+    {7,      11131},
+    {8,      11132},
+    {9,      11133},
+    {10,     11134},
+    {11,     11135},
+    {12,     11136},
+    {13,     11137},
+    {14,     11138},
+    {15,     11139},
+    {16,     11140},
+    {17,     11141},
+    {18,     11142},
+    {19,     11143},
+    {20,     11144},
+    {21,     11145},
+    {22,     11146},
+    {23,     11147},
+    {24,     11148},
+    {25,     11149},
+    {26,     11150},
+    {27,     11151},
+    {28,     11152},
+    {29,     11153},
+    {30,     11154},
+    {31,     11155},
+    {32,     11156},
+    {33,     11157},
+    {34,     11158},
+    {35,     11159},
 };
 
 USHORT GetPortNum(USHORT usIndex)
@@ -599,6 +599,76 @@ INT PrasePortConfigFile(const CHAR *pcFile)
 }
 
 /*****************************************************************************
+ Func Name    : ParseSocketInfo
+ Date Created : 2020/11/12
+ Author       : pengying21074
+ Description  : read socket ip address and port from specific file
+ Input        : CONST CHAR *pcFilePath    pointer to file name
+                USOCK_INFO_S *pstResult   pointer to parse result buffer
+                UINT uiAddrBufSize        result buffer size
+ Output       : NONE
+ Return       : ERROR_SUCCESS   return ok
+                ERROR_FAILED    return fail
+ Caution      :
+*****************************************************************************/
+
+INT ParseSocketInfo(CONST CHAR *pcFilePath, SOCK_INFO_S *pstResult, UINT uiAddrBufSize)
+{
+    CHAR Str2Int[16] = {0};
+    CHAR acAddr[32] = {0};
+    UINT uiTmp;
+    
+    if(pcFilePath == NULL || pstResult == NULL)
+    return ERROR_FAILED;
+    
+    std::ifstream file(pcFilePath, std::ifstream::in);
+    if(file)
+    {
+        file.getline(acAddr, 32, '\n');
+        if(strlen(acAddr) < 7)
+        {
+            cout << "parse addr fail.\n";
+        }
+        else
+        {
+            memset(pstResult->szAddr, 0, uiAddrBufSize);
+            strncpy(pstResult->szAddr, acAddr, uiAddrBufSize-1);
+        }
+        if(file.eof())
+        {
+            file.close();
+            return ERROR_SUCCESS;
+        }
+        
+        file.getline(Str2Int, 16);
+        if(strlen(Str2Int) <= 0)
+        {
+            cout << "parse port fail.\n";
+        }
+        else
+        {
+            uiTmp = atoi(Str2Int);
+            if(uiTmp > 0xffff)
+            {
+                cout << "invalid port num, exceed limit.\n";
+                return ERROR_FAILED;
+            }
+            else
+            {
+                pstResult->usPort = (USHORT)uiTmp;
+            }
+        }
+        file.close();
+
+        return ERROR_SUCCESS;
+
+    }
+    cout << "can not find address file " << pcFilePath << endl;
+    return ERROR_FAILED;
+}
+
+
+/*****************************************************************************
  Func Name    : SENDER::SENDER
  Date Created : 2020/11/12
  Author       : pengying21074
@@ -616,6 +686,7 @@ SENDER::SENDER(const std :: string & IdentifyName, USHORT usID)
     usPort = GetPortNum(usID);
     usIndex = usID;
     iFD = INVALID_SOCK;
+    memset(szIPAddr, 0, sizeof(szIPAddr));
     
 }
 
@@ -654,14 +725,42 @@ SENDER::~SENDER() {}
                 -1  ²Ù×÷Ê§°Ü
  Caution      :
 *****************************************************************************/
-INT SENDER::Connect(VOID)
+INT SENDER::Connect(CONST CHAR *pcAddr)
 {
     INT iRet = ERROR_SUCCESS;
     INT sockFd = INVALID_SOCK;
     struct sockaddr_in stSockParam;
 
     stSockParam.sin_family = AF_INET;
-    stSockParam.sin_addr.s_addr = inet_addr(REMOTE_ADDR);
+    stSockParam.sin_addr.s_addr = inet_addr(pcAddr);
+    strncpy(szIPAddr, pcAddr, sizeof(szIPAddr) - 1);
+
+    if(usPort == 0xffff)
+    {
+        return ERROR_FAILED;
+    }
+    stSockParam.sin_port = htons(usPort);
+
+    sockFd = socket(AF_INET, SOCK_STREAM, 0);
+    iRet = connect(sockFd, (struct sockaddr*)&stSockParam, sizeof(stSockParam));
+    if(iRet != ERROR_SUCCESS)
+    {
+        perror("Socket connect");
+        cout << "Tx " << name << " is not available.\n";
+        return ERROR_FAILED;
+    }
+    iFD = sockFd;
+    return ERROR_SUCCESS;
+}
+
+INT SENDER::Connect()
+{
+    INT iRet = ERROR_SUCCESS;
+    INT sockFd = INVALID_SOCK;
+    struct sockaddr_in stSockParam;
+
+    stSockParam.sin_family = AF_INET;
+    stSockParam.sin_addr.s_addr = inet_addr(szIPAddr);
 
     if(usPort == 0xffff)
     {

@@ -64,18 +64,25 @@ SC_MODULE(Receiver)
     sc_port<sc_fifo_out_if<CELL> > OUT_ProcPlane2;
     sc_port<sc_fifo_out_if<CELL> > OUT_ProcPlane3;
     sc_in_clk CLK;
+    
+    sc_out<ULONG> OUT_RecvOK;
+    
+    ULONG ulCount;
 
-    sc_port< sc_fifo_out_if<USHORT> > OUT_Link0;
-    sc_port< sc_fifo_out_if<USHORT> > OUT_Link1;
-    sc_port< sc_fifo_out_if<USHORT> > OUT_Link2;
-    sc_port< sc_fifo_out_if<USHORT> > OUT_Link3;
-
-    void Recv_FuncEntry(void);
+    void Recv_ProcFunc(void);
+    void Recv_Update_LinkStatus(void);
     SC_CTOR(Receiver)
     {
-        SC_THREAD(Recv_FuncEntry);
+        SC_THREAD(Recv_ProcFunc);
         sensitive << CLK.pos();
+
+        SC_THREAD(Recv_Update_LinkStatus);
+        sensitive << CLK.pos();
+
+        ulCount = 0;
+
         dont_initialize();
+
     }
 };
 

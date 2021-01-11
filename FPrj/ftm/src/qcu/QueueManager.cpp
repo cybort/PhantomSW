@@ -60,7 +60,7 @@ void QueueManager::filt()
         //丢包
         if (packet_descriptor.get_result())
         {
-            packet_in_fifo.pop();
+            //packet_in_fifo.pop();
             return;
         }
         //入队，FTMH头的src_tm_id存入查找到的dest_tm_id，存入缓存

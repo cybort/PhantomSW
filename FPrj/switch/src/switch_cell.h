@@ -49,9 +49,9 @@ Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
 #define CELL_FORMAT_SUB_TIMESLOT_SIZE       24
 
 #define CELL_SIZE           (sizeof(CELL))
-#define CELL_FLOWSTS_SIZE   (sizeof(cell_flowsts))
-#define CELL_CREDIT_SIZE    (sizeof(cell_credit))
-#define CELL_ROUTE_SIZE     (sizeof(cell_route))
+#define CELL_FLOWSTS_SIZE   12
+#define CELL_CREDIT_SIZE    12
+#define CELL_ROUTE_SIZE     12
 
 
 
@@ -124,7 +124,7 @@ struct CELL
     template <typename T>
     void extract(T& c)
     {
-        std::copy(raw_data, raw_data+sizeof(c), c.raw_data);
+        std::copy(raw_data, raw_data+sizeof(c.raw_data), c.raw_data);
     }
 
     inline bool operator == (const CELL & rhs) const
@@ -155,7 +155,7 @@ struct cell_flowsts
 {
     union
     {
-        char raw_data[]; // RAW_SIZE];
+        char raw_data[CELL_FLOWSTS_SIZE]; // RAW_SIZE];
         struct __attribute__ ((packed))
         {
             unsigned ver : 2;
@@ -204,7 +204,7 @@ struct cell_credit
 {
     union
     {
-        char raw_data[]; // RAW_SIZE];
+        char raw_data[CELL_CREDIT_SIZE]; // RAW_SIZE];
         struct __attribute__ ((packed))
         {
             unsigned ver : 2;
@@ -250,7 +250,7 @@ struct cell_route
 {
     union
     {
-        char raw_data[]; // RAW_SIZE];
+        char raw_data[CELL_ROUTE_SIZE]; // RAW_SIZE];
         struct __attribute__ ((packed))
         {
             unsigned ver : 2;

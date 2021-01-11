@@ -347,7 +347,7 @@ ULONG Host_SendMsgtoRemote(UINT uiChannleId, VOID *pInBuf, UINT uiInBufSize)
                 ERROR_FAILED : ²Ù×÷Ê§°Ü
  Caution      : 
 *****************************************************************************/
-ULONG CLI_CmdSetValue(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam)
+ULONG CLI_CmdSetValue(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam, VOID *pOutBuf, UINT uiSize)
 {
     ULONG ulRetVal = ERROR_SUCCESS;
     UCHAR aucBuffer[sizeof(CLI_CMD_PARAM_S) + 8] = {0};
@@ -369,7 +369,7 @@ ULONG CLI_CmdSetValue(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam)
     CLI_Memcpy(aucBuffer + uiBufSizeCnt, "#\n", 2);
     uiBufSizeCnt += 2;
 
-    ulRetVal = Host_SendMsgtoRemote(uiChannelId, aucBuffer, uiBufSizeCnt);
+    ulRetVal = Host_GetMsgFromRemote(uiChannelId, aucBuffer, uiBufSizeCnt, pOutBuf, uiSize);
     YNTEST_CHK_FAILED(ulRetVal, "CLI_CmdSetValue: Host_SendMsgtoRemote failed\n");
 
     return ulRetVal;
@@ -387,7 +387,7 @@ ULONG CLI_CmdSetValue(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam)
                 ERROR_FAILED : ²Ù×÷Ê§°Ü
  Caution      : 
 *****************************************************************************/
-ULONG CLI_CmdSetValuebyAddr(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam)
+ULONG CLI_CmdSetValuebyAddr(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam, VOID *pOutBuf, UINT uiSize)
 {
     ULONG ulRetVal = ERROR_SUCCESS;
     UCHAR aucBuffer[sizeof(CLI_CMD_PARAM_S) + 8] = {0};
@@ -413,7 +413,7 @@ ULONG CLI_CmdSetValuebyAddr(UINT uiChannelId, CLI_CMD_PARAM_S *pstParam)
     CLI_Memcpy(aucBuffer + uiBufSizeCnt, "#\n", 2);
     uiBufSizeCnt += 2;
 
-    ulRetVal = Host_SendMsgtoRemote(uiChannelId, aucBuffer, uiBufSizeCnt);
+    ulRetVal = Host_GetMsgFromRemote(uiChannelId, aucBuffer, uiBufSizeCnt, pOutBuf, uiSize);
     YNTEST_CHK_FAILED(ulRetVal, "CLI_CmdSetValue: Host_SendMsgtoRemote failed\n");
 
     return ulRetVal;

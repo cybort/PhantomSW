@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-26 14:12:04
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-18 11:05:32
+ * @LastEditTime: 2021-01-04 13:36:39
  */
 #include "StatCounter.h"
 
@@ -200,49 +200,58 @@ int StatCounterBase::retrieve_counter(const std::string & module_name, const std
     return counter_repeated_db[module_name][counter_name][addr];
 }
 
-int StatCounterBase::retrieve_counter_size(const std::string & module_name, const std::string & counter_name)
-{
-    std::lock_guard<std::mutex> guard(lock);
-    if (!constraint_counter_exists(module_name, counter_name))
-    {
-        std::cout << "Counter " << counter_name << " need to register first!" << std::endl;
-        return 0;
-    }
-
-    if (constraint_counter_is_mono(module_name, counter_name))
-    {
-        std::cout << "Mono counter " << counter_name << " don't have size!" << std::endl;
-        return 0;
-    }
-
-    return counter_repeated_db[module_name][counter_name].size();
-}
-
-std::vector<std::string> & StatCounterBase::retrieve_module_list(std::vector<std::string> & list)
+void StatCounterBase::retrieve_module_list(std::vector<std::string> & list)
 {
     std::lock_guard<std::mutex> guard(lock);
     for (auto iter = counter_type_db.begin(); iter != counter_type_db.end(); iter++)
     {
         list.push_back(iter->first);
     }
-    return list;
 }
 
-std::vector<std::string> & StatCounterBase::retrieve_counter_list(const std::string & module_name,
-                                                                  std::vector<std::string> & list)
+void StatCounterBase::retrieve_counter_list(const std::string & module_name, std::vector<std::string> & list)
 {
     std::lock_guard<std::mutex> guard(lock);
     if (!constraint_module_exists(module_name))
     {
         std::cout << "Module " << module_name << " don't exists!" << std::endl;
-        return list;
+        return;
     }
 
     for (auto iter = counter_type_db[module_name].begin(); iter != counter_type_db[module_name].end(); iter++)
     {
         list.push_back(iter->first);
     }
-    return list;
+}
+
+void StatCounterBase::retrieve_counter_lines(const std::string & module_name, const std::string & counter_name,
+                                             std::vector<std::pair<int, int>> & list)
+{
+    std::lock_guard<std::mutex> guard(lock);
+    if (!constraint_module_exists(module_name))
+    {
+        std::cout << "Module " << module_name << " don't exists!" << std::endl;
+        return;
+    }
+
+    if (!constraint_counter_exists(module_name, counter_name))
+    {
+        std::cout << "Counter " << counter_name << " need to register first!" << std::endl;
+        return;
+    }
+
+    if (constraint_counter_is_mono(module_name, counter_name))
+    {
+        list.push_back(std::make_pair(0, counter_mono_db[module_name][counter_name]));
+    }
+    else if (constraint_counter_is_repeated(module_name, counter_name))
+    {
+        for (auto iter = counter_repeated_db[module_name][counter_name].begin();
+             iter != counter_repeated_db[module_name][counter_name].end(); iter++)
+        {
+            list.push_back(*iter);
+        }
+    }
 }
 
 bool StatCounterBase::constraint_module_exists(const std::string & module_name)

@@ -1,6 +1,3 @@
-#include <iostream>
-#include <string>
-#include <cstring>
 /*******************************************************************************
 Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
 --------------------------------------------------------------------------------
@@ -18,6 +15,11 @@ Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
    YYYY-MM-DD  
 
 *******************************************************************************/
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstring>
+#include <vector>
 
 #include "systemc.h"
 #include "prv_deftype.h"
@@ -36,6 +38,8 @@ using std:: endl;
 using std:: string;
 
 ULONG g_ulLinkUsedStatus = 0xfffffffff;
+STATIC SOCK_INFO_S g_stRemotSocketParam = {{"127.0.0.1"}, 12024};
+
 
 VOID UpdateLinkStatus(USHORT usLink, BOOL_T bStatus)
 {
@@ -114,6 +118,8 @@ VOID Transmit:: Transmit_FuncEntry()
     UINT uiLen;
     UINT uiType;
     UINT uiAvaCell; /* 需要发送的cell个数 */
+    std::vector<PACKET> vecDataList;
+    std::vector<PACKET> vecControlList;
 
     SENDER Link[MAX_TRANSMIT_LINK] = {
                         SENDER("link0", 0),
@@ -154,9 +160,13 @@ VOID Transmit:: Transmit_FuncEntry()
                         SENDER("link35", 35)
                     };
 
+    if(ParseSocketInfo( "ftm_ip.txt", &g_stRemotSocketParam, sizeof(g_stRemotSocketParam.szAddr)) != ERROR_SUCCESS )
+    {
+        cout << "socket connect remote use default ip address.\n";
+    }
     for(uiLoop = 0; uiLoop < MAX_TRANSMIT_LINK; uiLoop++)
     {
-        iRet = Link[uiLoop].Connect();
+        iRet = Link[uiLoop].Connect(g_stRemotSocketParam.szAddr);
         if(ERROR_FAILED == iRet )
         continue;
     }
@@ -165,27 +175,90 @@ VOID Transmit:: Transmit_FuncEntry()
     {
         do{
             wait();
-        }while(IN_Packet0->num_available() == 0);
+        }while( (IN_Packet0->num_available() == 0) && \
+                (IN_Packet1->num_available() == 0) && \
+                (IN_Packet2->num_available() == 0) && \
+                (IN_Packet3->num_available() == 0));
 
-        uiAvaCell = IN_Packet0->num_available();
-    //    cout << "Transmit num: " << uiAvaCell << endl;
-        for(uiLoop = 0; uiLoop < uiAvaCell; uiLoop++)
+        if(IN_Packet0->num_available() != 0)
         {
-            IN_Packet0->read(InData);
+            uiAvaCell = IN_Packet0->num_available();
+            for(int i = 0; i < uiAvaCell; i++)
+            {
+                IN_Packet0->read(InData);
+                if(InData.type >= 8)
+                {
+                    vecControlList.push_back(InData);
+                }
+                else
+                {
+                    vecDataList.push_back(InData);
+                }
+            }
+        }
+        if(IN_Packet1->num_available() != 0)
+        {
+            uiAvaCell = IN_Packet1->num_available();
+            for(int i = 0; i < uiAvaCell; i++)
+            {
+                IN_Packet1->read(InData);
+                if(InData.type >= 8)
+                {
+                    vecControlList.push_back(InData);
+                }
+                else
+                {
+                    vecDataList.push_back(InData);
+                }
+            }
+        }
+        if(IN_Packet2->num_available() != 0)
+        {
+            uiAvaCell = IN_Packet2->num_available();
+            for(int i = 0; i < uiAvaCell; i++)
+            {
+                IN_Packet2->read(InData);
+                if(InData.type >= 8)
+                {
+                    vecControlList.push_back(InData);
+                }
+                else
+                {
+                    vecDataList.push_back(InData);
+                }
+            }
+        }
+        if(IN_Packet3->num_available() != 0)
+        {
+            uiAvaCell = IN_Packet3->num_available();
+            for(int i = 0; i < uiAvaCell; i++)
+            {
+                IN_Packet3->read(InData);
+                if(InData.type >= 8)
+                {
+                    vecControlList.push_back(InData);
+                }
+                else
+                {
+                    vecDataList.push_back(InData);
+                }
+            }
+        }
+      //  cout << "data: " << vecDataList.size() << "  control: " << vecControlList.size() << endl;
+        /* 先发送控制信元 */
+        while(!vecControlList.empty())
+        {
+            InData = vecControlList.back();
+            vecControlList.pop_back();
             usOutLink = InData.link;
             uiType = InData.type;
 
             switch( uiType )
             {
-                case CellType::Unicast:
-                case CellType::Empty:
-                {
-                    strEncode = base64_encode((unsigned char *)InData.cell.raw_data, sizeof(InData.cell.raw_data));/* base64 编码 */
-                    break;
-                }
                 case CellType::FlowSts:
                 {
                     cell_flowsts cell_f;
+                    memset(cell_f.raw_data, 0, sizeof(cell_f.raw_data));
                     InData.cell.extract(cell_f);
                     strEncode = base64_encode((unsigned char *)cell_f.raw_data, sizeof(cell_f.raw_data));/* base64 编码 */
                     break;
@@ -193,33 +266,32 @@ VOID Transmit:: Transmit_FuncEntry()
                 case CellType::Credit:
                 {
                     cell_credit cell_c;
+                    memset(cell_c.raw_data, 0, sizeof(cell_c.raw_data));
                     InData.cell.extract(cell_c);
-                    strEncode = base64_encode((unsigned char *)cell_c.raw_data, sizeof(cell_c.raw_data));/* base64 编码 */
+                    strEncode = base64_encode((unsigned char *)cell_c.raw_data, sizeof(cell_c.raw_data));
                     break;
                 }
                 case CellType::Route:
                 {
                     cell_route cell_r;
+                    memset(cell_r.raw_data, 0, sizeof(cell_r.raw_data));
                     InData.cell.extract(cell_r);
-                    strEncode = base64_encode((unsigned char *)cell_r.raw_data, sizeof(cell_r.raw_data));/* base64 编码 */
+                    strEncode = base64_encode((unsigned char *)cell_r.raw_data, sizeof(cell_r.raw_data));
                     break;
                 }
                 default:
-                    cout << "Not supported!";
+                    cout << "Not supported!\n";
             }
 
             /* 发送buffer填充 */
             uiLen = strEncode.length();
-
             pBuffer = new char[uiLen + 1];
             memset(pBuffer, 0, uiLen + 1);
-
             strEncode.copy(pBuffer, uiLen);
             pBuffer[uiLen] = '\n';
 
             switch(uiType)
             {
-                case CellType::Unicast: 
                 case CellType::Credit:
                 case CellType::FlowSts:
                 {
@@ -227,8 +299,51 @@ VOID Transmit:: Transmit_FuncEntry()
                     UpdateLinkStatus(usOutLink, BOOL_FALSE);
                     break;
                 }
-                case CellType::Multicast:
+                case CellType::Route:
                 {
+                    for(uiLoop = 0; uiLoop < MAX_TRANSMIT_LINK; uiLoop++)/*向所有链路广播*/
+                    {
+                        Link[uiLoop].MsgSend(pBuffer, uiLen + 1);
+                    }
+                    break;
+                }
+                default:
+                    cout << "Send(control): cell type is not defined.\n";
+            }
+            delete [] pBuffer;
+            ulCount++;
+        }
+        /* 控制信元发送完成后再发送数据信元 */
+        while(!vecDataList.empty())
+        {
+            InData = vecDataList.back();
+            vecDataList.pop_back();
+            usOutLink = InData.link;
+            uiType = InData.type;
+            switch(uiType)
+            {
+                case CellType::Unicast:
+                case CellType::Empty:
+                {
+                    strEncode = base64_encode((unsigned char *)InData.cell.raw_data, CELL_FORMAT_SIZE);/* base64 编码 */
+                    break;
+                }
+                default:
+                cout << "Not supported!\n";
+            }
+            /* 发送buffer填充 */
+            uiLen = strEncode.length();
+            pBuffer = new char[uiLen + 1];
+            memset(pBuffer, 0, uiLen + 1);
+            strEncode.copy(pBuffer, uiLen);
+            pBuffer[uiLen] = '\n';
+            
+            switch(uiType)
+            {
+                case CellType::Unicast:
+                {
+                    Link[usOutLink].MsgSend(pBuffer, uiLen + 1);
+                    UpdateLinkStatus(usOutLink, BOOL_FALSE);
                     break;
                 }
                 case CellType::Empty:
@@ -237,7 +352,7 @@ VOID Transmit:: Transmit_FuncEntry()
                     if(EmptySearch(g_ulLinkUsedStatus, &outlink) == 0)
                     {
                         Link[outlink].MsgSend(pBuffer, uiLen + 1);
-                        cout << "Send: Empty cell outlink  " << outlink << endl;
+                   //     cout << "Send: Empty cell outlink  " << outlink << endl;
                     }
                     #if 0
                     for(uiLoop = 0; uiLoop < MAX_TRANSMIT_LINK; uiLoop++)
@@ -251,19 +366,16 @@ VOID Transmit:: Transmit_FuncEntry()
                     #endif
                     break;
                 }
-                case CellType::Route:
-                {
-                    for(uiLoop = 0; uiLoop < MAX_TRANSMIT_LINK; uiLoop++)/*向所有链路广播*/
-                    {
-                        Link[uiLoop].MsgSend(pBuffer, uiLen + 1);
-                    }
-                    break;
-                }
+                case CellType::Multicast:
+                cout << "Multicast not support now.\n";
                 default:
-                    cout << "Send: cell type is not defined.\n";
+                    cout << "Send(data): cell type is not defined.\n";
             }
             delete [] pBuffer;
+            ulCount++;
         }
         g_ulLinkUsedStatus = 0xfffffffff;
+        OUT_Count.write(ulCount);
     }
 }
+

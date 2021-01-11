@@ -43,100 +43,41 @@ inline ostream& operator << ( ostream& os, const PACKET & a )
 
 SC_MODULE(TxMac)
 {
-    sc_in<bool> IN_Valid0;
-    sc_in<bool> IN_Valid1;
-    sc_in<bool> IN_Valid2;
-    sc_in<bool> IN_Valid3;
-    
-    sc_in<CELL> IN_Packet0;
-    sc_in<CELL> IN_Packet1;
-    sc_in<CELL> IN_Packet2;
-    sc_in<CELL> IN_Packet3;
-    
-    sc_in<sc_uint<4> > IN_Type0;
-    sc_in<sc_uint<4> > IN_Type1;
-    sc_in<sc_uint<4> > IN_Type2;
-    sc_in<sc_uint<4> > IN_Type3;
-    
-    sc_in<USHORT> IN_Link0;
-    sc_in<USHORT> IN_Link1;
-    sc_in<USHORT> IN_Link2;
-    sc_in<USHORT> IN_Link3;
-    
-    sc_in<sc_uint<36> > IN_Bitmap0;
-    sc_in<sc_uint<36> > IN_Bitmap1;
-    sc_in<sc_uint<36> > IN_Bitmap2;
-    sc_in<sc_uint<36> > IN_Bitmap3;
+    sc_in<bool> IN_Valid;
+    sc_in<CELL> IN_Packet;
+    sc_in<sc_uint<4> > IN_Type;
+    sc_in<USHORT> IN_Link;
+    sc_in<sc_uint<36> > IN_Bitmap;
 
     /* ¿ØÖÆÐÅÔª in port */
-    sc_in<USHORT> IN_Ctl_Link0;
-    sc_in<sc_uint<4> > IN_Ctl_Type0;
-    sc_in<CELL> IN_Ctl_Packet0;
-    sc_in<bool> IN_Ctl_Valid0;
+    sc_in<USHORT> IN_Ctl_Link;
+    sc_in<sc_uint<4> > IN_Ctl_Type;
+    sc_in<CELL> IN_Ctl_Packet;
+    sc_in<bool> IN_Ctl_Valid;
 
-    sc_in<USHORT> IN_Ctl_Link1;
-    sc_in<sc_uint<4> > IN_Ctl_Type1;
-    sc_in<CELL> IN_Ctl_Packet1;
-    sc_in<bool> IN_Ctl_Valid1;
-
-    sc_in<USHORT> IN_Ctl_Link2;
-    sc_in<sc_uint<4> > IN_Ctl_Type2;
-    sc_in<CELL> IN_Ctl_Packet2;
-    sc_in<bool> IN_Ctl_Valid2;
-
-    sc_in<USHORT> IN_Ctl_Link3;
-    sc_in<sc_uint<4> > IN_Ctl_Type3;
-    sc_in<CELL> IN_Ctl_Packet3;
-    sc_in<bool> IN_Ctl_Valid3;
-
-    sc_port<sc_fifo_out_if<PACKET> > OUT_Packet0;
-//    sc_port<sc_fifo_out_if<PACKET> > OUT_Packet1;
-//    sc_port<sc_fifo_out_if<PACKET> > OUT_Packet2;
-//    sc_port<sc_fifo_out_if<PACKET> > OUT_Packet3;
+    sc_out<ULONG> OUT_Count;
+    sc_port<sc_fifo_out_if<PACKET> > OUT_Packet;
     
     sc_in_clk CLK;
-
     sc_mutex mutex;
 
-    unsigned int uiCount;
+    ULONG ulCount;
+
 
     SC_CTOR(TxMac)
     {
-        SC_THREAD(TxMac_Ctl_Thread0);
+        SC_THREAD(TxMac_ControlProcFunc);
         sensitive << CLK;
 
-        SC_THREAD(TxMac_Ctl_Thread1);
+        SC_THREAD(TxMac_DataProcFunc);
         sensitive << CLK;
 
-        SC_THREAD(TxMac_Ctl_Thread2);
-        sensitive << CLK;
+        ulCount = 0;
 
-        SC_THREAD(TxMac_Ctl_Thread3);
-        sensitive << CLK;
-
-        SC_THREAD(TxMac_Thread0);
-        sensitive << CLK;
-
-        SC_THREAD(TxMac_Thread1);
-        sensitive << CLK;
-
-        SC_THREAD(TxMac_Thread2);
-        sensitive << CLK;
-
-        SC_THREAD(TxMac_Thread3);
-        sensitive << CLK;
-        uiCount = 0;
         dont_initialize();
     }
-    VOID TxMac_Ctl_Thread0();
-    VOID TxMac_Ctl_Thread1();
-    VOID TxMac_Ctl_Thread2();
-    VOID TxMac_Ctl_Thread3();
-
-    VOID TxMac_Thread0();
-    VOID TxMac_Thread1();
-    VOID TxMac_Thread2();
-    VOID TxMac_Thread3();
+    VOID TxMac_ControlProcFunc();
+    VOID TxMac_DataProcFunc();
 };
 
 

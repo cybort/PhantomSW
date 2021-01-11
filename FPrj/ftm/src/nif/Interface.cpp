@@ -1,8 +1,8 @@
 /*
  * @Author: duyang
  * @Date: 2020-11-07 10:06:20
- * @LastEditTime: 2020-12-28 18:00:11
- * @LastEditors: f21538
+ * @LastEditTime: 2021-01-06 14:44:02
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  */
 
@@ -167,6 +167,7 @@ void Interface::qin_request()
             }
             else
             {
+                valid_pd.write(false);
                 //               std::cout << "pd fifo empty" << std::endl;
             }
         }

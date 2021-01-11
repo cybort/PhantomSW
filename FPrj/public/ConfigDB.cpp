@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-26 14:12:04
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-18 10:52:15
+ * @LastEditTime: 2021-01-04 13:41:33
  */
 #include "ConfigDB.h"
 #include <Exception.h>
@@ -210,46 +210,52 @@ int ConfigDB::retrieve_config(const std::string & module_name, const std::string
     return config_repeated_db[module_name][config_name][addr];
 }
 
-int ConfigDB::retrieve_config_size(const std::string & module_name, const std::string & config_name)
+void ConfigDB::retrieve_config_lines(const std::string & module_name, const std::string & config_name,
+                                     std::vector<std::pair<int, int>> & list)
 {
     std::lock_guard<std::mutex> guard(lock);
+    if (!constraint_module_exists(module_name))
+    {
+        std::stringstream err;
+        err << "Module " << module_name << " don't exists!" << std::endl;
+        throw Exception(err.str());
+    }
+
     if (!constraint_config_exists(module_name, config_name))
     {
-        // std::cout << "Config " << config_name << " need to register first!" << std::endl;
-        // return 0;
         std::stringstream err;
-        err << "Module " << module_name << " Config " << config_name << " need to register first!";
+        err << "Config " << config_name << " need to register first!" << std::endl;
         throw Exception(err.str());
     }
 
     if (constraint_config_is_mono(module_name, config_name))
     {
-        // std::cout << "Mono config " << config_name << " don't have size!" << std::endl;
-        // return 0;
-        return 1;
+        list.push_back(std::make_pair(0, config_mono_db[module_name][config_name]));
     }
-
-    return config_repeated_db[module_name][config_name].size();
+    else if (constraint_config_is_repeated(module_name, config_name))
+    {
+        for (auto iter = config_repeated_db[module_name][config_name].begin();
+             iter != config_repeated_db[module_name][config_name].end(); iter++)
+        {
+            list.push_back(*iter);
+        }
+    }
 }
 
-template <typename StringsContainer> StringsContainer & ConfigDB::retrieve_module_list(StringsContainer & list)
+void ConfigDB::retrieve_module_list(std::vector<std::string> & list)
 {
     std::lock_guard<std::mutex> guard(lock);
     for (auto iter = config_type_db.begin(); iter != config_type_db.end(); iter++)
     {
         list.push_back(iter->first);
     }
-    return list;
 }
 
-template <typename StringsContainer>
-StringsContainer & ConfigDB::retrieve_config_list(const std::string & module_name, StringsContainer & list)
+void ConfigDB::retrieve_config_list(const std::string & module_name, std::vector<std::string> & list)
 {
     std::lock_guard<std::mutex> guard(lock);
     if (!constraint_module_exists(module_name))
     {
-        // std::cout << "Module " << module_name << " don't exists!" << std::endl;
-        // return list;
         std::stringstream err;
         err << "Module " << module_name << " Module " << module_name << " don't exists!";
         throw Exception(err.str());
@@ -259,7 +265,6 @@ StringsContainer & ConfigDB::retrieve_config_list(const std::string & module_nam
     {
         list.push_back(iter->first);
     }
-    return list;
 }
 
 bool ConfigDB::constraint_module_exists(const std::string & module_name)

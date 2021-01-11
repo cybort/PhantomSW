@@ -34,6 +34,12 @@ typedef struct tagTRANSMIT_PORT_INFO
     USHORT usPort;
 }TRANSMIT_PORT_INFO_S;
 
+typedef struct tagSOCK_INFO
+{
+    CHAR szAddr[32];
+    USHORT usPort;
+}SOCK_INFO_S;
+
 class PORT_LINK
 {
     USHORT usPort; /* ¼àÌýµÄ¶Ë¿ÚºÅ */
@@ -47,7 +53,7 @@ class PORT_LINK
 
     public:
     VOID ShowInfo(VOID);
-    INT LinkUp(USHORT usPortNum);
+    INT LinkUp(USHORT usPortNum, CONST CHAR *pcIPAddr);
     INT LinkDown(VOID);
     PORT_LINK(const std::string & LinkName, UINT uiIndex);
     PORT_LINK();
@@ -84,17 +90,20 @@ class SENDER
     USHORT usPort;
     USHORT usIndex;
     INT iFD;
+    CHAR szIPAddr[32];
 
     public:
     SENDER(const std::string & IdentifyName, USHORT uiID);
     SENDER();
     ~SENDER();
-    INT Connect(VOID);
+    INT Connect(CONST CHAR *pcAddr);
+    INT Connect();
     INT MsgSend(VOID *buffer, UINT size);
 };
 
 
 INT PrasePortConfigFile(const CHAR *pcFile);
+INT ParseSocketInfo(CONST CHAR *pcFilePath, SOCK_INFO_S *pstResult, UINT uiAddrBufSize);
 
 
 #endif

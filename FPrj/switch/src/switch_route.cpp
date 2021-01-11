@@ -196,7 +196,7 @@ INT UnicastSearch(USHORT dest, USHORT *plink)
  Return       : NONE
  Caution      :
 *****************************************************************************/
-void Route::Route_Thread0()
+void Route::Route_ProcFunc()
 {
     CELL tmp;
     CELL OldData;
@@ -209,26 +209,28 @@ void Route::Route_Thread0()
         /* 等待valid 信号拉高 */
         do {
             wait();
-        }while(IN_Valid0 != true);
+        }while(IN_Valid != true);
         
-        OUT_Valid0 = false;
-        tmp = IN_Packet0.read();
+        OUT_Valid = false;
+        tmp = IN_Packet.read();
         if(!(tmp == OldData))
         {
-            OldData = IN_Packet0.read();
-            type = IN_Type0.read();
+            OldData = IN_Packet.read();
+            type = IN_Type.read();
 
             switch(type)
             {
                 case CellType::Unicast:
                 {
+                    cout << "Route: processing   1  ~" << "  dest: " << dest << endl;
                     dest = tmp.dest_id;
                     if(UnicastSearch(dest, &outlink) == 0)
                     {
-                        OUT_Link0.write(outlink);
-                        OUT_Packet0.write(tmp);
-                        OUT_Type0.write(type);
-                        OUT_Valid0 = true;
+                        cout << "Route: processing   2  ~" << "  outlink: " << outlink << endl;
+                        OUT_Link.write(outlink);
+                        OUT_Packet.write(tmp);
+                        OUT_Type.write(type);
+                        OUT_Valid = true;
                     }
                     break;
                 }
@@ -241,224 +243,21 @@ void Route::Route_Thread0()
                     {
                         tmp.fts = g_uiLastTimeslot;
                     }
-                    OUT_Packet0.write(tmp);
-                    OUT_Type0.write(type);
-                    OUT_Valid0 = true;
+                    OUT_Packet.write(tmp);
+                    OUT_Type.write(type);
+                    OUT_Valid = true;
                     break;
                 }
                 default:
                     cout << "Route: cell type is not supported.\n";
             }
             g_uiLastTimeslot = tmp.fts;
+
+            ulBlockCount++;
+            OUT_Count.write(ulBlockCount);
         }
     }
 }
-
-/*****************************************************************************
- Func Name    : Route::Route_func_entry()
- Date Created : 2020/11/12
- Author       : pengying21074
- Description  : ROUTE模块定义的process实现
- Input        : NONE
- Output       : NONE
- Return       : NONE
- Caution      :
-*****************************************************************************/
-void Route::Route_Thread1()
-{
-    CELL tmp;
-    CELL OldData;
-    USHORT dest;
-    USHORT outlink;
-    UINT type;
-    
-    while(1)
-    {
-        /* 等待valid 信号拉高 */
-        do {
-            wait();
-        }while(IN_Valid1 != true);
-        
-        OUT_Valid1 = false;
-        tmp = IN_Packet1.read();
-        if(!(tmp == OldData))
-        {
-            OldData = IN_Packet1.read();
-            type = IN_Type1.read();
-
-            switch(type)
-            {
-                case CellType::Unicast:
-                {
-                    dest = tmp.dest_id;
-                    if(UnicastSearch(dest, &outlink) == 0)
-                    {
-                        OUT_Link1.write(outlink);
-                        OUT_Packet1.write(tmp);
-                        OUT_Type1.write(type);
-                        OUT_Valid1 = true;
-                    }
-                    break;
-                }
-                case CellType::Multicast:
-                /* 组播暂未合入 */
-                    break;
-                case CellType::Empty:
-                {
-                    if(g_uiLastTimeslot < tmp.fts)
-                    {
-                        tmp.fts = g_uiLastTimeslot;
-                    }
-                    OUT_Packet1.write(tmp);
-                    OUT_Type1.write(type);
-                    OUT_Valid1 = true;
-                    break;
-                }
-                default:
-                    cout << "Route: cell type is not support.\n";
-            }
-            g_uiLastTimeslot = tmp.fts;
-        }
-    }
-}
-
-
-/*****************************************************************************
- Func Name    : Route::Route_func_entry()
- Date Created : 2020/11/12
- Author       : pengying21074
- Description  : ROUTE模块定义的process实现
- Input        : NONE
- Output       : NONE
- Return       : NONE
- Caution      :
-*****************************************************************************/
-void Route::Route_Thread2()
-{
-    CELL tmp;
-    CELL OldData;
-    USHORT dest;
-    USHORT outlink;
-    UINT type;
-    
-    while(1)
-    {
-        /* 等待valid 信号拉高 */
-        do {
-            wait();
-        }while(IN_Valid2 != true);
-        
-        OUT_Valid2 = false;
-        tmp = IN_Packet2.read();
-        if(!(tmp == OldData))
-        {
-            OldData = IN_Packet2.read();
-            type = IN_Type2.read();
-
-            switch(type)
-            {
-                case CellType::Unicast:
-                {
-                    dest = tmp.dest_id;
-                    if(UnicastSearch(dest, &outlink) == 0)
-                    {
-                        OUT_Link2.write(outlink);
-                        OUT_Packet2.write(tmp);
-                        OUT_Type2.write(type);
-                        OUT_Valid2 = true;
-                    }
-                    break;
-                }
-                case CellType::Multicast:
-                /* 组播暂未合入 */
-                    break;
-                case CellType::Empty:
-                {
-                    if(g_uiLastTimeslot < tmp.fts)
-                    {
-                        tmp.fts = g_uiLastTimeslot;
-                    }
-                    OUT_Packet2.write(tmp);
-                    OUT_Type2.write(type);
-                    OUT_Valid2 = true;
-                    break;
-                }
-                default:
-                    cout << "Route: cell type is not defined.\n";
-            }
-            g_uiLastTimeslot = tmp.fts;
-        }
-    }
-}
-
-/*****************************************************************************
- Func Name    : Route::Route_func_entry()
- Date Created : 2020/11/12
- Author       : pengying21074
- Description  : ROUTE模块定义的process实现
- Input        : NONE
- Output       : NONE
- Return       : NONE
- Caution      :
-*****************************************************************************/
-void Route::Route_Thread3()
-{
-    CELL tmp;
-    CELL OldData;
-    USHORT dest;
-    USHORT outlink;
-    UINT type;
-    
-    while(1)
-    {
-        /* 等待valid 信号拉高 */
-        do {
-            wait();
-        }while(IN_Valid3 != true);
-        
-        OUT_Valid3 = false;
-        tmp = IN_Packet3.read();
-        if(!(tmp == OldData))
-        {
-            OldData = IN_Packet3.read();
-            type = IN_Type3.read();
-
-            switch(type)
-            {
-                case CellType::Unicast:
-                {
-                    dest = tmp.dest_id;
-                    if(UnicastSearch(dest, &outlink) == 0)
-                    {
-                        OUT_Link3.write(outlink);
-                        OUT_Packet3.write(tmp);
-                        OUT_Type3.write(type);
-                        OUT_Valid3 = true;
-                    }
-                    break;
-                }
-                case CellType::Multicast:
-                /* 组播暂未合入 */
-                    break;
-                case CellType::Empty:
-                {
-                    if(g_uiLastTimeslot < tmp.fts)
-                    {
-                        tmp.fts = g_uiLastTimeslot;
-                    }
-                    OUT_Packet3.write(tmp);
-                    OUT_Type3.write(type);
-                    OUT_Valid3 = true;
-                    break;
-                }
-                default:
-                    cout << "Route: cell type is not defined.\n";
-            }
-            g_uiLastTimeslot = tmp.fts;
-        }
-    }
-}
-
 
 /*****************************************************************************
  Func Name    : Update::Update_Route_Thread0()
@@ -470,7 +269,7 @@ void Route::Route_Thread3()
  Return       : NONE
  Caution      :
 *****************************************************************************/
-VOID Update::Update_Route_Thread0()
+VOID Update::Update_ProcFunc()
 {
     INT ret;
     BOOL bRC = FALSE;
@@ -480,11 +279,12 @@ VOID Update::Update_Route_Thread0()
         /* 等待valid 信号拉高 */
         do {
             wait();
-        }while(IN_Valid0 != true);
+        }while(IN_Valid != true);
 
-        bRC = IN_RC0.read();
-        USHORT usLink= IN_Link0.read();
+        bRC = IN_RC.read();
+        USHORT usLink= IN_Link.read();
         USHORT usDest = RouteTable[ usLink ].usDestination;
+        cout << "Update:link " << usLink << endl;
         if ( bRC )
         {
             ret = BitMapSet( &UnicastRouteTable[ usDest ].ulLinkValid, usLink );
@@ -496,110 +296,3 @@ VOID Update::Update_Route_Thread0()
     }
 }
 
-/*****************************************************************************
- Func Name    : Update::Update_Route_Thread1()
- Date Created : 2020/12/16
- Author       : 
- Description  : ROUTE模块定义的控制信元处理实现
- Input        : NONE
- Output       : NONE
- Return       : NONE
- Caution      :
-*****************************************************************************/
-VOID Update::Update_Route_Thread1()
-{
-    INT ret;
-    BOOL bRC = FALSE;
-        
-    while(TRUE)
-    {
-        /* 等待valid 信号拉高 */
-        do {
-            wait();
-        }while(IN_Valid1 != true);
-
-        bRC = IN_RC1.read();
-        USHORT usLink= IN_Link1.read();
-        USHORT usDest = RouteTable[ usLink ].usDestination;
-        if ( bRC )
-        {
-            ret = BitMapSet( &UnicastRouteTable[ usDest ].ulLinkValid, usLink );
-        }
-        else
-        {
-            cout << "link " << usLink << " cannot reach dest " << usDest << endl;
-        }
-    }
-}
-
-/*****************************************************************************
- Func Name    : Update::Update_Route_Thread2()
- Date Created : 2020/12/16
- Author       : 
- Description  : ROUTE模块定义的控制信元处理实现
- Input        : NONE
- Output       : NONE
- Return       : NONE
- Caution      :
-*****************************************************************************/
-VOID Update::Update_Route_Thread2()
-{
-    INT ret;
-    BOOL bRC = FALSE;
-        
-    while(TRUE)
-    {
-        /* 等待valid 信号拉高 */
-        do {
-            wait();
-        }while(IN_Valid2 != true);
-
-        bRC = IN_RC2.read();
-        USHORT usLink= IN_Link2.read();
-        USHORT usDest = RouteTable[ usLink ].usDestination;
-        if ( bRC )
-        {
-            ret = BitMapSet( &UnicastRouteTable[ usDest ].ulLinkValid, usLink );
-        }
-        else
-        {
-            cout << "link " << usLink << " cannot reach dest " << usDest << endl;
-        }
-    }
-}
-
-/*****************************************************************************
- Func Name    : Update::Update_Route_Thread3()
- Date Created : 2020/12/16
- Author       : 
- Description  : ROUTE模块定义的控制信元处理实现
- Input        : NONE
- Output       : NONE
- Return       : NONE
- Caution      :
-*****************************************************************************/
-VOID Update::Update_Route_Thread3()
-{
-    INT ret;
-    BOOL bRC = FALSE;
-        
-    while(TRUE)
-    {
-        /* 等待valid 信号拉高 */
-        do {
-            wait();
-        }while(IN_Valid3 != true);
-
-        bRC = IN_RC3.read();
-        USHORT usLink= IN_Link3.read();
-        USHORT usDest = RouteTable[ usLink ].usDestination;
-        if ( bRC )
-        {
-            ret = BitMapSet( &UnicastRouteTable[ usDest ].ulLinkValid, usLink );
-        }
-        else
-        {
-            cout << "link " << usLink << " cannot reach dest " << usDest << endl;
-        }
-    }
-}

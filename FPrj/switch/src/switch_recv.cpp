@@ -30,6 +30,7 @@ Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
 #include "common.h"
 #include "switch_cell.h"
 #include "base64.h"
+#include "switch_route.h"
 
 using std::cout;
 using std::endl;
@@ -37,6 +38,7 @@ using std::string;
 
 #define MAX_RECEIVE_LINK    (36)
 #define MAX_PLANE           (4)
+#define MAX_TIMEOUT_COUNT    50
 
 #if 0
 LINK_MAP_INFO_S g_astLinkMapInfo[MAX_PLANE] = 
@@ -66,12 +68,53 @@ LINK_MAP_INFO_S g_astLinkMapInfo[MAX_PLANE] =
 
 LINK_MAP_INFO_S g_astLinkMapInfo[MAX_PLANE] = 
 {
-    {0, 12, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
-    {1, 12, {9, 10, 11, 12, 13, 14, 15, 16, 17}},
-    {2, 12, {18, 19, 20, 21, 22, 23, 24, 25, 26}},
+    {0, 9, {0, 1, 2, 3, 4, 5, 6, 7, 8}},
+    {1, 9, {9, 10, 11, 12, 13, 14, 15, 16, 17}},
+    {2, 9, {18, 19, 20, 21, 22, 23, 24, 25, 26}},
     {3, 9, {27, 28, 29, 30, 31, 32, 33, 34, 35}}
 };    
 
+ROUTE_S RouteTable[] = {
+    {0,      0,      0,      true,     MAX_TIMEOUT_COUNT},
+    {1,      0,      1,      true,     MAX_TIMEOUT_COUNT},
+    {2,      0,      2,      true,     MAX_TIMEOUT_COUNT},
+    {3,      0,      3,      true,     MAX_TIMEOUT_COUNT},
+    {4,      0,      4,      true,     MAX_TIMEOUT_COUNT},
+    {5,      0,      5,      true,     MAX_TIMEOUT_COUNT},
+    {6,      0,      6,      true,     MAX_TIMEOUT_COUNT},
+    {7,      0,      7,      true,     MAX_TIMEOUT_COUNT},
+    {8,      0,      8,      true,     MAX_TIMEOUT_COUNT},
+    {9,      0,      9,      true,     MAX_TIMEOUT_COUNT},
+    {10,     0,      10,     true,     MAX_TIMEOUT_COUNT},
+    {11,     0,      11,     true,     MAX_TIMEOUT_COUNT},
+    {12,     0,      12,     true,     MAX_TIMEOUT_COUNT},
+    {13,     0,      13,     true,     MAX_TIMEOUT_COUNT},
+    {14,     0,      14,     true,     MAX_TIMEOUT_COUNT},
+    {15,     0,      15,     true,     MAX_TIMEOUT_COUNT},
+    {16,     0,      16,     true,     MAX_TIMEOUT_COUNT},
+    {17,     0,      17,     true,     MAX_TIMEOUT_COUNT},
+    {18,     1,      18,     true,     MAX_TIMEOUT_COUNT},
+    {19,     1,      19,     true,     MAX_TIMEOUT_COUNT},
+    {20,     1,      20,     true,     MAX_TIMEOUT_COUNT},
+    {21,     1,      21,     true,     MAX_TIMEOUT_COUNT},
+    {22,     1,      22,     true,     MAX_TIMEOUT_COUNT},
+    {23,     1,      23,     true,     MAX_TIMEOUT_COUNT},
+    {24,     1,      24,     true,     MAX_TIMEOUT_COUNT},
+    {25,     1,      25,     true,     MAX_TIMEOUT_COUNT},
+    {26,     1,      26,     true,     MAX_TIMEOUT_COUNT},
+    {27,     1,      27,     true,     MAX_TIMEOUT_COUNT},
+    {28,     1,      28,     true,     MAX_TIMEOUT_COUNT},
+    {29,     1,      29,     true,     MAX_TIMEOUT_COUNT},
+    {30,     1,      30,     true,     MAX_TIMEOUT_COUNT},
+    {31,     1,      31,     true,     MAX_TIMEOUT_COUNT},
+    {32,     1,      32,     true,     MAX_TIMEOUT_COUNT},
+    {33,     1,      33,     true,     MAX_TIMEOUT_COUNT},
+    {34,     1,      34,     true,     MAX_TIMEOUT_COUNT},
+    {35,     1,      35,     true,     MAX_TIMEOUT_COUNT}
+};
+
+ULONG g_ulLinkUpdatedStatus = 0;
+STATIC SOCK_INFO_S g_stListenSocketParam = {{"10.114.220.169"}, 11023};
 
 /* 遍历link,判断此fd是否是该link连接列表已存在fd,若是返回该link索引号,否则返回-1*/
 /*****************************************************************************
@@ -297,6 +340,25 @@ UINT ReadOnSocket(INT iFd, UINT uiDestSize, VOID *pBuf, UINT uiSize, CHAR Delim)
 }
 
 /*****************************************************************************
+ Func Name    : UpdateLinkValidStatus
+ Date Created : 2020/12/23
+ Author       : 
+ Description  : Rx模块定义的process实现
+ Input        : NONE
+ Output       : NONE
+ Return       : NONE
+ Caution      :
+*****************************************************************************/
+void UpdateLinkValidStatus( USHORT usLink )
+{
+    INT ret;
+    RouteTable[ usLink ].bLinkValid = TRUE;
+    RouteTable[ usLink ].usTimeOut = MAX_TIMEOUT_COUNT;
+    ret = BitMapSet( &g_ulLinkUpdatedStatus, usLink );/*记录已更新过的链路*/
+    return;
+}
+
+/*****************************************************************************
  Func Name    : Receiver::Recv_func_entry
  Date Created : 2020/11/12
  Author       : pengying21074
@@ -306,7 +368,7 @@ UINT ReadOnSocket(INT iFd, UINT uiDestSize, VOID *pBuf, UINT uiSize, CHAR Delim)
  Return       : NONE
  Caution      :
 *****************************************************************************/
-VOID Receiver::Recv_FuncEntry(VOID)
+VOID Receiver::Recv_ProcFunc(VOID)
 {
     UINT uiLoop;
     INT iWakeUp;
@@ -314,7 +376,7 @@ VOID Receiver::Recv_FuncEntry(VOID)
     INT iFd,iClientFd;
     UINT uiIndex = 0;
     INT iCtlRead;
-    USHORT listen_port = 10023;
+    USHORT listen_port = 11023;
     CELL read_data;
     CHAR *pcReadBuf;
     INT MsgLink;
@@ -324,6 +386,7 @@ VOID Receiver::Recv_FuncEntry(VOID)
     UINT uiRemain, uiReadSize;
     UINT uiTotalRead = 0;
     EVENT Notification = EVENT(100);    /* event 事件资源监视器创建 */
+    USHORT uiPlaneStatus = 0x7;//0x7-111,每个bit代表一个BLOCK
 
     /* 虚拟端口创建,类实例化对象 */
     PORT_LINK Link[MAX_RECEIVE_LINK] = {
@@ -372,11 +435,15 @@ VOID Receiver::Recv_FuncEntry(VOID)
         exit(1);
     }
 
+    if(ParseSocketInfo( "switch_ip.txt", &g_stListenSocketParam, sizeof(g_stListenSocketParam.szAddr)) != ERROR_SUCCESS)
+    {
+        cout << "switch listen ip and port use default, ip :127.0.0.1, first port: 11024\n";
+    }
     /* port初始化 */
     for(uiLoop = 0; uiLoop < MAX_RECEIVE_LINK; uiLoop++)
     {
         /* port socket创建并监听指定端口 */
-        iRet = Link[uiLoop].LinkUp(++listen_port);
+        iRet = Link[uiLoop].LinkUp(++g_stListenSocketParam.usPort, g_stListenSocketParam.szAddr);
         if(0 != iRet)
         {
             cout << "Recv: Rx " << Link[uiLoop].GetName()<<" link up failed!!\n";
@@ -463,7 +530,8 @@ VOID Receiver::Recv_FuncEntry(VOID)
                         else
                         {
                             cout << "Recv: Rx " << Link[MsgLink].GetName() << " receive message :\n";
-                            
+                            UpdateLinkValidStatus(MsgLink);
+
                            /* 分配临时缓存区存socket接收数据 */
                            pcReadBuf = new char[iCtlRead+1];
                            uiRemain = iCtlRead;
@@ -477,6 +545,8 @@ VOID Receiver::Recv_FuncEntry(VOID)
                                 /* 需要检查最后一个字符是否为换行符,并处理该换行符 */
                                 if('\n' == pcReadBuf[uiReadSize - 1])
                                 {
+                                    ulCount++;
+                                    OUT_RecvOK.write(ulCount);
                                     /* 此次收包完成 */
                                      pcReadBuf[uiReadSize - 1] = '\0';
                                      /* decode  */
@@ -489,7 +559,7 @@ VOID Receiver::Recv_FuncEntry(VOID)
                                      strDecode.copy(read_data.raw_data, uiLen);
                                      //cout << "Recv: RX Cell type : " << read_data.type << "  Cell Len: " << uiLen << "  rece len:" << iCtlRead << endl;
 
-                                     DisplayPacket(read_data.raw_data, sizeof(read_data.raw_data));
+                                     //DisplayPacket(read_data.raw_data, sizeof(read_data.raw_data));
                                       /* 将cell 缓存到fifo,不同处理平面使用不同fifo */
                                      uiPlane = GetLinkPlane(MsgLink);
                                      //cout << "Plane Index :" << uiPlane << "    PlaneStatus : " << uiPlaneStatus << endl;
@@ -497,19 +567,15 @@ VOID Receiver::Recv_FuncEntry(VOID)
                                      {
                                          case 0:
                                              OUT_ProcPlane0->write(read_data);
-                                             OUT_Link0->write( MsgLink );
                                              break;
                                          case 1:
                                             OUT_ProcPlane1->write(read_data);
-                                            OUT_Link1->write( MsgLink );
                                             break;
                                          case 2:
                                              OUT_ProcPlane2->write(read_data);
-                                             OUT_Link2->write( MsgLink );
                                              break;
                                          case 3:
                                              OUT_ProcPlane3->write(read_data);
-                                             OUT_Link3->write( MsgLink );
                                              break;
                                          default:
                                             cout << "process plane not defined.\n";
@@ -519,6 +585,8 @@ VOID Receiver::Recv_FuncEntry(VOID)
                                 else
                                 {
                                     cout << "Recv: receive cell failed\n";
+                                  //  ulCountFail++;
+                                  //  OUT_RecvFail.write(ulCountFail);
                                 }
                             }while(uiRemain != 0);
                             /* 释放动态分配的内存 */
@@ -530,3 +598,64 @@ VOID Receiver::Recv_FuncEntry(VOID)
         }
     }
 }
+
+/*****************************************************************************
+ Func Name    : Receiver::Recv_Update_LinkStatus()
+ Date Created : 2020/12/15
+ Author       : 
+ Description  : ROUTE模块定义的控制信元处理实现
+ Input        : NONE
+ Output       : NONE
+ Return       : NONE
+ Caution      :
+*****************************************************************************/
+VOID Receiver::Recv_Update_LinkStatus()
+{
+    USHORT usIndex;
+    INT     ret = 0;
+
+    /*先判断是否有新的路由信元，带来相关路由信息*/
+    while(TRUE)
+    {
+        wait();
+        ULONG   g_ulLinkAvailable = 0xfffffffff;
+        for ( usIndex = 0; usIndex < sizeof(RouteTable)/sizeof(RouteTable[0]); usIndex++)
+        {
+            if ( BitMapValid(&g_ulLinkUpdatedStatus, usIndex) )
+            {
+                //cout << " Update: link id " << usIndex << "has been updated" << endl;
+                continue;
+            }
+            //cout << " Update: link id " << usIndex << endl;
+            if ( !RouteTable[ usIndex ].bLinkValid )
+            {
+                ret = BitMapClear( &g_ulLinkAvailable, usIndex);
+                continue;
+            }
+            else
+            {
+                if ( ( RouteTable[ usIndex ].usTimeOut == 0 ) )
+                {
+                    RouteTable[ usIndex ].bLinkValid = FALSE;
+                    continue;
+                }
+                else
+                {
+                    RouteTable[ usIndex ].usTimeOut -= 1;
+                    continue;
+                }
+            }
+        }
+        g_ulLinkUpdatedStatus = 0;/*更新一轮后清零*/
+        for ( usIndex = 0; usIndex < sizeof(RouteTable)/sizeof(RouteTable[0]); usIndex++)
+        {
+            cout << "link id: " << RouteTable[ usIndex ].uiLinkId;
+            cout << "     statue: " << RouteTable[ usIndex ].bLinkValid;
+            cout << "     timeout: " << RouteTable[ usIndex ].usTimeOut << endl;
+        }
+        printf("link status : 0x%x\n", g_ulLinkAvailable );
+        cout << endl;
+    }
+}
+
+

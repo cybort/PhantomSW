@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 09:55:07
- * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-12-03 15:12:16
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-01-06 15:30:56
  * @Description: file content
  */
 #ifndef _FIFO_H_
@@ -47,11 +47,12 @@ template <class T> void Fifo<T>::push(T const &element)
         q.push(element);
     }
 }
-
+#include "iostream"
 template <class T> T Fifo<T>::pop()
 {
     T ret = q.front();
     q.pop();
+
     return ret;
 }
 

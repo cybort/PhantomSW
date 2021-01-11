@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-28 14:56:53
+ * @LastEditTime: 2021-01-06 11:43:09
  */
 #ifndef _TX_H_
 #define _TX_H_
@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <vector>
-
 
 SC_MODULE(tx)
 {
@@ -103,23 +102,22 @@ SC_MODULE(tx)
             link_port[i] = SW_BA_PORT + 18*SRC_TM_ID + (i-18);
         }*/
 
-        for (int i = 0; i < SEND_SOCKETS_NUM/2; i++)
+        for (int i = 0; i < SEND_SOCKETS_NUM / 2; i++)
         {
             link_ip[i] = SW0_IP;
         }
-        for (int i = SEND_SOCKETS_NUM/2; i < SEND_SOCKETS_NUM; i++)
+        for (int i = SEND_SOCKETS_NUM / 2; i < SEND_SOCKETS_NUM; i++)
         {
             link_ip[i] = SW1_IP;
         }
-        for (int i = 0; i < SEND_SOCKETS_NUM/2; i++)
+        for (int i = 0; i < SEND_SOCKETS_NUM / 2; i++)
         {
-            link_port[i] = SW0_BA_PORT + 18*SRC_TM_ID + i;
+            link_port[i] = SW0_BA_PORT + 18 * SRC_TM_ID + i;
         }
-        for (int i = SEND_SOCKETS_NUM/2; i < SEND_SOCKETS_NUM; i++)
+        for (int i = SEND_SOCKETS_NUM / 2; i < SEND_SOCKETS_NUM; i++)
         {
-            link_port[i] = SW1_BA_PORT + 18*SRC_TM_ID + (i-SEND_SOCKETS_NUM/2);
+            link_port[i] = SW1_BA_PORT + 18 * SRC_TM_ID + (i - SEND_SOCKETS_NUM / 2);
         }
-
 
         for (int i = 0; i < SEND_SOCKETS_NUM; i++)
         {
@@ -136,7 +134,7 @@ SC_MODULE(tx)
 
     ~tx()
     {
-        for (int i = 0; i < LISTEN_SOCKETS_NUM; i++)
+        for (int i = 0; i < SEND_SOCKETS_NUM; i++)
         {
             if (cc[i] != NULL)
             {

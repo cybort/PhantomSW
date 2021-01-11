@@ -24,18 +24,20 @@ Copyright (c) 2012, Hangzhou H3C Technologies Co., Ltd. All rights reserved.
 SC_MODULE(Transmit)
 {
     sc_port<sc_fifo_in_if<PACKET> >IN_Packet0;
-//    sc_port<sc_fifo_in_if<PACKET> >IN_Packet1;
-//    sc_port<sc_fifo_in_if<PACKET> >IN_Packet2;
-//    sc_port<sc_fifo_in_if<PACKET> >IN_Packet3;
+    sc_port<sc_fifo_in_if<PACKET> >IN_Packet1;
+    sc_port<sc_fifo_in_if<PACKET> >IN_Packet2;
+    sc_port<sc_fifo_in_if<PACKET> >IN_Packet3;
     sc_in_clk CLK;
 
-    unsigned int uiCount;
+    sc_out<ULONG> OUT_Count;
+
+    ULONG ulCount;
 
     SC_CTOR(Transmit)
     {
         SC_THREAD(Transmit_FuncEntry);
         sensitive << CLK;
-        uiCount = 0;
+        ulCount = 0;
     }
     VOID Transmit_FuncEntry();
 };
