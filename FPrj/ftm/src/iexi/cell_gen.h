@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-26 14:55:14
+ * @LastEditTime: 2021-01-11 11:40:02
  */
 #ifndef _CELL_GEN_H_
 #define _CELL_GEN_H_
@@ -53,7 +53,7 @@ SC_MODULE(cell_gen)
     // void recv_pkt();/*deprecated*/
     void recv();
     void split();
-    cell & fill_cell(cell & c, const char * str, int str_size, int dest_id);
+    cell & fill_cell(cell & c, const char * str, int str_size, int dest_id, CellType::Type type);
     void transfer();
     void update_counter();
 

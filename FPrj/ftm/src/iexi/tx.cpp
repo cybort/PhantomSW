@@ -160,6 +160,8 @@ void tx::connect()
 void tx::socket()
 {
     sc_time period(1, SC_MS);
+    // std::cout << "press any key after switch goes online" << std::endl;
+    // getchar();
     while (true)
     {
         // std::cout<<"press any key after switch start"<<endl;
@@ -172,7 +174,7 @@ void tx::socket()
 
                 if (!cc[i]->IsConnected())
                 {
-                    //cc[i]->Open(SW_IP, SW_BASE_SERVER_PORT + i);
+                    // cc[i]->Open(SW_IP, SW_BASE_SERVER_PORT + i);
                     cc[i]->Open(link_ip[i], link_port[i]);
                     h[i].Add(cc[i]);
                 }
@@ -206,22 +208,26 @@ void tx::socket()
                     h[i].Select(0, 1);
                     if (h[i].GetCount())
                     {
+                        link_status[i] = true;
                         h[i].Select(0, 1);
                         keeper.inc(period);
                         if (keeper.need_sync())
                             keeper.sync();
-                        //log.prefix() << "No. " << i << " socket is ok ip" << link_ip[i] << "port" << link_port[i] <<std::endl;
+                        // log.prefix() << "No. " << i << " socket is ok ip" << link_ip[i] << "port" << link_port[i]
+                        // <<std::endl;
                     }
                     else
                     {
-                        log.prefix() << "No. " << i << " socket disconnected ip" << link_ip[i] << "port" << link_port[i] <<std::endl;
+                        link_status[i] = false;
+                        log.prefix() << "No. " << i << " socket disconnected ip" << link_ip[i] << "port" << link_port[i]
+                                     << std::endl;
                         delete cc[i];
                         cc[i] = new ClientSocketLong<cell>(h[i]);
                         std::this_thread::sleep_for(std::chrono::milliseconds(300));
                         keeper.inc(period);
                         if (keeper.need_sync())
                             keeper.sync();
-                        //cc[i]->Open(SW_IP, SW_BASE_SERVER_PORT + i);
+                        // cc[i]->Open(SW_IP, SW_BASE_SERVER_PORT + i);
                         cc[i]->Open(link_ip[i], link_port[i]);
                         h[i].Add(cc[i]);
                         h[i].Select(1, 0);
@@ -266,20 +272,22 @@ void tx::send()
             // "<<SW_BASE_SERVER_PORT+i<<std::endl;
             if (debug)
             {
-                log.prefix() << "sending to port: " << link_port[i] << " ip " << link_ip[i] << std::endl;//SW_BASE_SERVER_PORT + i << endl;
+                log.prefix() << "sending to port: " << link_port[i] << " ip " << link_ip[i]
+                             << std::endl; // SW_BASE_SERVER_PORT + i << endl;
             }
             switch (c.type)
             {
             case CellType::Unicast:
+            case CellType::Multicast:
                 cc[i]->SendWithEncode(c.raw_data, sizeof(cell_unicast));
                 break;
             case CellType::FlowSts:
                 cc[i]->SendWithEncode(c.raw_data, sizeof(cell_flowsts));
-                stat.increase_counter("flow_status_tx", reinterpret_cast<cell_flowsts*>(&c)->dest_id(), 1);
+                stat.increase_counter("flow_status_tx", reinterpret_cast<cell_flowsts *>(&c)->dest_id(), 1);
                 break;
             case CellType::Credit:
                 cc[i]->SendWithEncode(c.raw_data, sizeof(cell_credit));
-                stat.increase_counter("credit_grant_tx", reinterpret_cast<cell_credit*>(&c)->dest_id(), 1);
+                stat.increase_counter("credit_grant_tx", reinterpret_cast<cell_credit *>(&c)->dest_id(), 1);
                 break;
             }
 
@@ -310,7 +318,7 @@ void tx::send()
             }
             used_num = 0;
         }
-        wait(sc_time (5, SC_MS));
+        wait(sc_time(5, SC_MS));
     }
 }
 
@@ -319,4 +327,14 @@ void tx::update_counter()
     stat.update_counter("pre_queue_size", qh.size());
     stat.update_counter("shuffle_queue_size", shuffle_queue.size());
     stat.update_counter("transfer_queue_size", transfer_queue.size());
+
+    sc_bv<LINK_MAX> output_link_status;
+    for (int i = 0; i < LINK_MAX; i++)
+    {
+        if (link_status[i])
+        {
+            output_link_status[i] = true;
+        }
+    }
+    link_valid_out.write(output_link_status);
 }

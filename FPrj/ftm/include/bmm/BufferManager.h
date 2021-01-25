@@ -2,7 +2,7 @@
  * @Author: your name
  * @Date: 2020-11-30 09:20:24
  * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-12-03 11:18:17
+ * @LastEditTime: 2021-01-21 10:40:57
  * @Description: file content
  */
 
@@ -34,38 +34,42 @@ SC_MODULE(BufferManager)
     sc_out<bool> packet_out_sop;
     sc_out<bool> packet_out_eop;
     sc_out<int> packet_out_mod;
-    /*addr in*/
-    sc_in<unsigned> addr_in;
-    sc_in<bool> addr_in_valid;
-    /*addr out*/
-    sc_out<unsigned> addr_out;
-    sc_out<bool> addr_out_valid;
+    /*read logic addr in*/
+    sc_in<unsigned> read_logic_addr_in;
+    sc_in<bool> read_logic_addr_in_valid;
+    /*save logic addr in*/
+    sc_in<unsigned> write_logic_addr_in;
+    /*save complete signal out*/
+    sc_out<bool> write_complete_signal_out;
+    /*read complete signal out*/
+    sc_out<bool> read_complete_signal_out;
 
     MultiClockTransmitter<data_bus> trs;
     MultiClockReceiver<data_bus> recv;
 
     Fifo<FPacket> packet_in_fifo;
     Fifo<FPacket> packet_out_fifo;
+    Fifo<unsigned> write_logic_addr_in_fifo;
 
     std::map<unsigned, FPacket> dram;
     ModuleLog log;
 
-    void recvPacket();
-    void save();
-    void read();
-    void transPacket();
+    void recv_packet();
+    void save_packet();
+    void read_packet();
+    void trans_packet();
 
     SC_CTOR(BufferManager)
         : trs(packet_out, packet_out_valid, packet_out_sop, packet_out_eop, packet_out_mod),
           recv(packet_in, packet_in_valid, packet_in_sop, packet_in_eop, packet_in_mod), log(name())
     {
-        SC_THREAD(recvPacket);
+        SC_THREAD(recv_packet);
         sensitive << clk.pos();
-        SC_THREAD(transPacket);
+        SC_THREAD(trans_packet);
         sensitive << clk.pos();
-        SC_THREAD(save);
+        SC_METHOD(save_packet);
         sensitive << clk.pos();
-        SC_METHOD(read);
+        SC_METHOD(read_packet);
         sensitive << clk.pos();
     }
 };

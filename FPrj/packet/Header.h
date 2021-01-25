@@ -26,6 +26,10 @@
 #define OUT_PORT_LENGTH 10
 #define CAL_LEN_LENGTH 9
 
+#define OTMH_TYPE_LENGTH 2
+#define PORT_NO_LENGTH 8
+#define MC_GPI_LENGTH 22
+
 class Header
 {
 
@@ -40,7 +44,7 @@ class Header
 
 class IHeader : Header
 {
-    public:
+public:
     enum Type
     {
         EMPTY,
@@ -87,12 +91,12 @@ class IHeader : Header
 
     void dump();
 
-    bool operator==(const IHeader &rhs) const
+    bool operator==(const IHeader & rhs) const
     {
         return (std::equal(this->bytes, this->bytes + sizeof(field), rhs.bytes));
     }
 
-    private:
+private:
     union
     {
         struct
@@ -131,11 +135,11 @@ class IHeader : Header
     };
 };
 
-extern void sc_trace(sc_trace_file *tf, const IHeader &v, const std::string &name);
+extern void sc_trace(sc_trace_file * tf, const IHeader & v, const std::string & name);
 
 class FHeader : Header
 {
-    public:
+public:
     enum Type
     {
         TDM_MULTICAST,
@@ -190,12 +194,12 @@ class FHeader : Header
 
     void dump();
 
-    bool operator==(const FHeader &rhs) const
+    bool operator==(const FHeader & rhs) const
     {
         return (std::equal(this->bytes, this->bytes + sizeof(field), rhs.bytes));
     }
 
-    private:
+private:
     union
     {
         struct
@@ -247,7 +251,91 @@ class FHeader : Header
     };
 };
 
-extern void sc_trace(sc_trace_file *tf, const FHeader &v, const std::string &name);
+extern void sc_trace(sc_trace_file * tf, const FHeader & v, const std::string & name);
+
+class OHeader : Header
+{
+public:
+    enum Type
+    {
+        TDM = 1,
+        MULTICAST,
+        UNICAST
+    };
+
+    OHeader();
+
+    std::string get_bytes();
+
+    void set_bytes(std::string bytes);
+
+    void set_type(enum Type type);
+
+    Type get_type();
+
+    void set_channel_no(unsigned channel_no);
+
+    unsigned get_channel_no();
+
+    void set_src_tm_id(unsigned src_tm_id);
+
+    unsigned get_src_tm_id();
+
+    void set_port_no(unsigned port_no);
+
+    unsigned get_port_no();
+
+    void set_mc_gpi(unsigned mc_gpi);
+
+    unsigned get_mc_gpi();
+
+    int get_size();
+
+    void dump();
+
+    bool operator==(const OHeader & rhs) const
+    {
+        return (std::equal(this->bytes, this->bytes + sizeof(field), rhs.bytes));
+    }
+
+private:
+    union
+    {
+        struct
+        {
+            Type type : OTMH_TYPE_LENGTH;
+            union
+            {
+
+                struct
+                {
+                    unsigned channel_no : CHANNEL_NO_LENGTH;
+                    unsigned /*reserved*/ : 9;
+                    unsigned src_tm_id : SRC_TM_ID_LENGTH;
+                } GNUC_PACKED tdm;
+
+                struct
+                {
+                    unsigned port_no : PORT_NO_LENGTH;
+                    unsigned mc_gpi : MC_GPI_LENGTH;
+                } GNUC_PACKED multicast;
+
+                struct
+                {
+                    unsigned port_no : PORT_NO_LENGTH;
+                    unsigned /*reserved*/ : 11;
+                    unsigned src_tm_id : SRC_TM_ID_LENGTH;
+                } GNUC_PACKED unicast;
+
+            } dest_info;
+
+        } GNUC_PACKED field;
+
+        char bytes[sizeof(field)];
+    };
+};
+
+extern void sc_trace(sc_trace_file * tf, const OHeader & v, const std::string & name);
 
 #undef ITMH_TYPE_LENGTH
 #undef CHANNEL_NO_LENGTH
@@ -263,6 +351,10 @@ extern void sc_trace(sc_trace_file *tf, const FHeader &v, const std::string &nam
 #undef SRC_TM_ID_LENGTH
 #undef OUT_PORT_LENGTH
 #undef CAL_LEN_LENGTH
+
+#undef OTMH_TYPE_LENGTH
+#undef PORT_NO_LENGTH
+#undef MC_GPI_LENGTH
 
 #undef GNUC_PACKED
 

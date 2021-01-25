@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-12-02 09:55:07
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-01-06 15:30:56
+ * @LastEditors: Zhao Yunpeng
+ * @LastEditTime: 2021-01-22 14:12:26
  * @Description: file content
  */
 #ifndef _FIFO_H_
@@ -14,7 +14,7 @@ template <class T> class Fifo
 public:
     Fifo();
     Fifo(unsigned max_size);
-    void push(T const &element);
+    void push(T const & element);
     T pop();
     bool is_full();
     bool is_empty() { return q.empty(); };
@@ -38,16 +38,17 @@ template <class T> Fifo<T>::Fifo(unsigned max_size)
     {
         throw Exception("max_size must be lager than 0");
     }
+    this->max_size = max_size;
 }
 
-template <class T> void Fifo<T>::push(T const &element)
+template <class T> void Fifo<T>::push(T const & element)
 {
     if (q.size() < max_size)
     {
         q.push(element);
     }
 }
-#include "iostream"
+
 template <class T> T Fifo<T>::pop()
 {
     T ret = q.front();

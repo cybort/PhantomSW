@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-11-30 09:20:25
- * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-11-30 16:18:03
+ * @LastEditors: f21538
+ * @LastEditTime: 2021-01-22 13:58:47
  * @Description: file content
  */
 #include "FlowStatusMessage.h"
@@ -40,8 +40,8 @@ void FlowStatusMessage::set_dest_tm_id(unsigned dest_tm_id)
 
 unsigned FlowStatusMessage::get_dest_tm_id() { return this->dest_tm_id; }
 
-void FlowStatusMessage::set_status(FlowStatus status) { this->status = status; }
+void FlowStatusMessage::set_status(CreditRequestStatus status) { this->status = status; }
 
-FlowStatus FlowStatusMessage::get_status() { return this->status; }
+CreditRequestStatus FlowStatusMessage::get_status() { return this->status; }
 
 void sc_trace(sc_trace_file * tf, const FlowStatusMessage & v, const std::string & name) {}

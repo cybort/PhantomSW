@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-11-30 09:20:25
- * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-12-26 18:03:54
+ * @LastEditors: f21538
+ * @LastEditTime: 2021-01-22 13:56:59
  * @Description: file content
  */
 #ifndef _FLOW_STATUS_MESSAGE_H
@@ -16,7 +16,7 @@
 #define FLOW_STATUS_MESSAGE_REQUIRE_SLOW 1
 #define FLOW_STATUS_MESSAGE_REQUIRE_NORMAL 2
 
-enum FlowStatus
+enum CreditRequestStatus
 {
     STATUS_OFF,
     STATUS_SLOW,
@@ -33,8 +33,8 @@ public:
     unsigned get_src_tm_id();
     void set_dest_tm_id(unsigned dest_tm_id);
     unsigned get_dest_tm_id();
-    void set_status(FlowStatus status);
-    FlowStatus get_status();
+    void set_status(CreditRequestStatus status);
+    CreditRequestStatus get_status();
     bool operator==(const FlowStatusMessage & rhs) const { return (rhs.flow_id == flow_id && rhs.status == status); }
     friend std::ostream & operator<<(std::ostream & os, const FlowStatusMessage & t)
     {
@@ -45,7 +45,7 @@ private:
     unsigned flow_id;
     unsigned src_tm_id;
     unsigned dest_tm_id;
-    FlowStatus status;
+    CreditRequestStatus status;
 };
 
 extern void sc_trace(sc_trace_file * tf, const FlowStatusMessage & v, const std::string & name);

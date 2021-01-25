@@ -3,13 +3,15 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:15
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 17:57:51
+ * @LastEditTime: 2021-01-12 15:58:55
  */
 #ifndef _CELL_RESOLVE_H_
 #define _CELL_RESOLVE_H_
 
+#include "ConfigDB.h"
 #include "ModuleLog.h"
 #include "MultiClockTransmitter.h"
+#include "Packet.h"
 #include "StatCounter.h"
 #include "cell.h"
 #include "config.h"
@@ -19,6 +21,9 @@
 #include <queue>
 #include <set>
 #include <utility>
+
+#define PORT_NUM_MAX 1024
+#define MULTICAST_ID_MAX (1 << 18)
 
 struct packet_identifer;
 struct cell_wait_queue;
@@ -52,6 +57,7 @@ SC_MODULE(cell_resolve)
 
     ModuleLog log;
     StatCounter stat;
+    ConfigAccesssor config;
 
     void verify();
     void rebuild();
@@ -62,7 +68,7 @@ SC_MODULE(cell_resolve)
     void update_counter();
 
     SC_CTOR(cell_resolve)
-        : debug(true), log(name()), tr(pkt_out, pkt_valid, sop, eop, mod, log), stat(name()),
+        : debug(true), log(name()), tr(pkt_out, pkt_valid, sop, eop, mod, log), stat(name()), config(name()),
           packet_wait_threshold(100), cell_resolve_wait_time(200)
     {
         SC_METHOD(verify);
@@ -79,6 +85,29 @@ SC_MODULE(cell_resolve)
 
         stat.register_counter("packet_rebuild_queue_size"); // cell_cache
         stat.register_counter("packet_reorder_queue_size"); // packet_wait_queue
+
+        // multicast port id & mask = bitmap & mask
+        config.register_config("multicast_table_bitmap", ConfigDB::Repeated);
+        config.register_config("multicast_table_mask", ConfigDB::Repeated);
+
+        for (int i = 0; i < MULTICAST_ID_MAX; i++)
+        {
+            if (i >= 0 && i < 1024) // port=mcid
+            {
+                config.update_config("multicast_table_bitmap", i, i);
+                config.update_config("multicast_table_mask", i, 0x3FF);
+            }
+            else if (1024 == i) // port%2=0 && port<=15
+            {
+                config.update_config("multicast_table_bitmap", i, 0);
+                config.update_config("multicast_table_mask", i, 0x3F1);
+            }
+            else if (1025 == i) // port%2=1
+            {
+                config.update_config("multicast_table_bitmap", i, 1);
+                config.update_config("multicast_table_mask", i, 0x3F1);
+            }
+        }
     }
 };
 
@@ -87,12 +116,12 @@ struct packet_identifer
     int timeslot;
     int src;
 
-    bool operator==(const packet_identifer &t) const { return timeslot == t.timeslot && src == t.src; }
-    bool operator<(const packet_identifer &t) const
+    bool operator==(const packet_identifer & t) const { return timeslot == t.timeslot && src == t.src; }
+    bool operator<(const packet_identifer & t) const
     {
         return timeslot == t.timeslot ? src < t.src : timeslot < t.timeslot;
     }
-    bool operator>(const packet_identifer &t) const
+    bool operator>(const packet_identifer & t) const
     {
         return timeslot == t.timeslot ? src > t.src : timeslot > t.timeslot;
     }
@@ -109,7 +138,7 @@ struct cell_wait_queue
 
 struct cell_resolve_compare
 {
-    bool operator()(cell &a, cell &b) { return a.fseq > b.fseq; }
+    bool operator()(cell & a, cell & b) { return a.fseq > b.fseq; }
 };
 
 struct packet_wait_item
@@ -119,13 +148,13 @@ struct packet_wait_item
     std::string packet_str;
 
     packet_wait_item() {}
-    packet_wait_item(packet_identifer des, int time, std::string &s)
+    packet_wait_item(packet_identifer des, int time, const std::string & s)
         : packet_des(des), enqueue_time(time), packet_str(s)
     {
     }
 
-    bool operator<(const packet_wait_item &t) const { return packet_des < t.packet_des; }
-    bool operator>(const packet_wait_item &t) const { return packet_des > t.packet_des; }
+    bool operator<(const packet_wait_item & t) const { return packet_des < t.packet_des; }
+    bool operator>(const packet_wait_item & t) const { return packet_des > t.packet_des; }
 };
 
 #endif

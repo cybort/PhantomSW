@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:15
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 14:25:58
+ * @LastEditTime: 2021-01-22 14:58:03
  */
 #include "cell_resolve.h"
 
@@ -49,9 +49,9 @@ void cell_resolve::verify()
     }
 }
 
-void cell_resolve::rebuild()
+void cell_resolve::rebuild() //转换OTMH头，识别是否为组播报文，组播复制并填写目的端口后进入reorder队列
 {
-    for (std::map<packet_identifer, cell_wait_queue>::iterator iter = cell_cache.begin(); iter != cell_cache.end();)
+    for (auto iter = cell_cache.begin(); iter != cell_cache.end();)
     {
         packet_identifer packet_des = iter->first;
         cell_wait_queue cells = iter->second;
@@ -60,14 +60,63 @@ void cell_resolve::rebuild()
         if (cells.eop == true && end_i->fseq == cells.queue.size() - 1) /*packet received completely*/
         {
             std::string cur_packet("");
-            for (std::set<cell>::iterator iter_set = cells.queue.begin(); iter_set != cells.queue.end(); iter_set++)
+            for (auto iter_set = cells.queue.begin(); iter_set != cells.queue.end(); iter_set++)
             {
                 cur_packet += std::string(iter_set->data, iter_set->len);
             }
             cell_cache.erase(iter++);
-            log.prefix() << "rebuild complete packet id " << packet_des.timeslot << endl;
+            // log.prefix() << "rebuild complete packet id " << packet_des.timeslot << endl;
             // packet_queue.push(cur_packet);
-            packet_wait_queue.push(packet_wait_item(packet_des, cur_time, cur_packet));
+            FPacket resolve_packet;
+            FHeader resolve_header;
+            OPacket transfer_packet;
+            OHeader transfer_header;
+            int mc_mask, mc_bitmap;
+            resolve_packet.set_bytes(cur_packet);
+            resolve_header = resolve_packet.get_ftmh();
+            transfer_packet.set_payload(resolve_packet.get_payload());
+            switch (resolve_header.get_type())
+            {
+            case FHeader::UNICAST:
+                transfer_header.set_type(OHeader::UNICAST);
+                transfer_header.set_src_tm_id(resolve_header.get_src_tm_id());
+                transfer_header.set_port_no(resolve_header.get_out_port());
+                transfer_packet.set_otmh(transfer_header);
+                log.prefix() << "rebuild unicast packet id " << packet_des.timeslot << " source id " << packet_des.src
+                             << " dest port " << resolve_header.get_out_port() << std::endl;
+                packet_wait_queue.push(packet_wait_item(packet_des, cur_time, transfer_packet.get_bytes()));
+                break;
+            case FHeader::MULTICAST:
+                transfer_header.set_type(OHeader::MULTICAST);
+                transfer_header.set_mc_gpi(resolve_header.get_multicast_id());
+                mc_mask = config.retrieve_config("multicast_table_mask", resolve_header.get_multicast_id());
+                mc_bitmap = config.retrieve_config("multicast_table_bitmap", resolve_header.get_multicast_id());
+                log.prefix() << "rebuild multicast packet id " << packet_des.timeslot << " source id " << packet_des.src
+                             << " mcid " << resolve_header.get_multicast_id() << std::endl;
+
+                for (int outport = 0; outport < PORT_NUM_MAX; outport++)
+                {
+                    if ((outport & mc_mask) == (mc_bitmap & mc_mask))
+                    {
+                        transfer_header.set_port_no(outport);
+                        transfer_packet.set_otmh(transfer_header);
+                        packet_wait_queue.push(packet_wait_item(packet_des, cur_time, transfer_packet.get_bytes()));
+                        log.prefix() << "duplicate mcid " << resolve_header.get_multicast_id() << " port " << outport
+                                     << std ::endl;
+                    }
+                    else
+                    {
+                        // log.prefix() << "port " << outport << " mc_mask " << mc_mask << "mc_bitmap" << mc_bitmap
+                        //              << "outport & mc_mask" << (outport & mc_mask) << "mc_bitmap & mc_mask"
+                        //              << (mc_bitmap & mc_mask) << std::endl;
+                    }
+                }
+                break;
+            default:
+                log.prefix() << "rebuild unknown type packet id " << packet_des.timeslot << " source id "
+                             << packet_des.src << std::endl;
+                packet_wait_queue.push(packet_wait_item(packet_des, cur_time, cur_packet));
+            }
         }
         else
         {
@@ -78,14 +127,14 @@ void cell_resolve::rebuild()
 
 void cell_resolve::clean()
 {
-    for (std::map<packet_identifer, cell_wait_queue>::iterator iter = cell_cache.begin(); iter != cell_cache.end();)
+    for (auto iter = cell_cache.begin(); iter != cell_cache.end();)
     {
         packet_identifer packet_des = iter->first;
         cell_wait_queue cells = iter->second;
         if (check_time_exceed(cells.recv_time, cell_resolve_wait_time)) /*packet timeout*/
         {
             log.prefix() << "timeout: packet id " << packet_des.timeslot << " src id " << packet_des.src << std::endl;
-            for (std::set<cell>::iterator iter_set = cells.queue.begin(); iter_set != cells.queue.end(); iter_set++)
+            for (auto iter_set = cells.queue.begin(); iter_set != cells.queue.end(); iter_set++)
             {
                 cell c = *iter_set;
                 c.dump_header("check queue: ", log.prefix());

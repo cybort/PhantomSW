@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-26 16:38:43
+ * @LastEditTime: 2021-01-22 14:41:17
  */
 #include "rx.h"
 
@@ -72,6 +72,7 @@ void rx::classify()
         switch (temp.type)
         {
         case CellType::Unicast:
+        case CellType::Multicast:
         {
             if (temp.len == 0)
             {
@@ -81,6 +82,7 @@ void rx::classify()
             {
                 transfer_queue.push(temp);
             }
+            log.prefix() << "data cell received" << std::endl;
             break;
         }
         case CellType::FlowSts:
@@ -135,7 +137,7 @@ void rx::ctrl_info()
         {
             FlowStatusMessage status;
             status.set_flow_id(temp_flowsts.flow_id());
-            status.set_status((FlowStatus)temp_flowsts.request());
+            status.set_status((CreditRequestStatus)temp_flowsts.request());
             status.set_dest_tm_id(temp_flowsts.dest_id());
             status.set_src_tm_id(temp_flowsts.source_id());
             flow_status_out.write(status);

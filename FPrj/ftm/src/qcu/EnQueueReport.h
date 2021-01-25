@@ -2,7 +2,7 @@
  * @Author: your name
  * @Date: 2020-11-30 09:20:25
  * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-12-02 09:53:36
+ * @LastEditTime: 2020-12-26 14:42:28
  * @Description: file content
  */
 #ifndef _EN_QUEUE_REPORT_H
@@ -26,17 +26,21 @@ public:
     void set_flow_id(unsigned flow_id);
     unsigned get_packet_size();
     void set_packet_size(unsigned packet_size);
-    bool operator==(const EnQueueReport &rhs) const
+    bool operator==(const EnQueueReport & rhs) const
     {
         return (rhs.flow_id == flow_id && rhs.packet_size == packet_size);
     }
-    friend std::ostream& operator<<(std::ostream& os, const EnQueueReport& t) { return os<<t.flow_id<<","<<t.packet_size; }
+    friend std::ostream & operator<<(std::ostream & os, const EnQueueReport & t)
+    {
+        return os << t.flow_id << "," << t.packet_size;
+    }
 
 private:
     unsigned flow_id;
     unsigned packet_size;
+    unsigned dest_tm_id;
 };
 
-extern void sc_trace(sc_trace_file *tf, const EnQueueReport &v, const std::string &name);
+extern void sc_trace(sc_trace_file * tf, const EnQueueReport & v, const std::string & name);
 
 #endif

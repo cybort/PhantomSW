@@ -3,8 +3,10 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:15
  * @LastEditors: f21538
- * @LastEditTime: 2020-12-01 11:28:15
+ * @LastEditTime: 2021-01-23 14:27:45
  */
+#include "CreditGrantConverter.h"
+#include "CreditRequestConverter.h"
 #include "cell_gen.h"
 #include "cell_resolve.h"
 #include "config.h"
@@ -12,8 +14,6 @@
 #include "systemc.h"
 #include "testbench.h"
 #include "tx.h"
-#include "CreditRequestConverter.h"
-#include "CreditGrantConverter.h"
 
 SC_MODULE(switch_interface)
 {
@@ -37,6 +37,7 @@ SC_MODULE(switch_interface)
     sc_out<bool> valid_flow_status_out;
     sc_out<CreditInfo> credit_info_out;
     sc_out<bool> valid_credit_info_out;
+    sc_out<sc_bv<LINK_MAX>> link_valid_out;
 
     cell_gen cg;
     cell_resolve cr;
@@ -52,7 +53,9 @@ SC_MODULE(switch_interface)
     sc_signal<cell_credit> credit_grant_up;
     sc_signal<bool> valid_credit_grant_up;
 
-    SC_CTOR(switch_interface) : cg("cell_gen"), cr("cell_resolve"), r("rx"), t("tx"), credit_request_converter("credit_request_converter"), credit_grant_converter("credit_grant_converter")
+    SC_CTOR(switch_interface)
+        : cg("cell_gen"), cr("cell_resolve"), r("rx"), t("tx"), credit_request_converter("credit_request_converter"),
+          credit_grant_converter("credit_grant_converter")
     {
 
         cg.debug = true;
@@ -104,20 +107,20 @@ SC_MODULE(switch_interface)
         t.valid_credit_request(valid_credit_request_up);
         t.credit_grant(credit_grant_up);
         t.valid_credit_grant(valid_credit_grant_up);
-        
+        t.link_valid_out(link_valid_out);
+
         credit_request_converter.debug = true;
         credit_request_converter.clk(clk);
         credit_request_converter.flow_status(flow_status_in);
         credit_request_converter.valid_flow_status(valid_flow_status_in);
         credit_request_converter.cell_request(credit_request_up);
         credit_request_converter.valid_cell_request(valid_credit_request_up);
-        
+
         credit_grant_converter.debug = true;
         credit_grant_converter.clk(clk);
         credit_grant_converter.credit_info(credit_info_in);
         credit_grant_converter.valid_credit_info(valid_credit_info_in);
         credit_grant_converter.cell_grant(credit_grant_up);
         credit_grant_converter.valid_cell_grant(valid_credit_grant_up);
-        
     }
 };

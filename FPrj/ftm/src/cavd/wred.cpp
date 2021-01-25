@@ -16,7 +16,7 @@ wred_pol::wred_pol(ModuleLog & l) : log(l)
 }
 */
 
-void wred::incr(unsigned q_num)
+void wred::incr(unsigned q_num, int bytes)
 {
     if (q_num > VOQ_NUM)
     {
@@ -24,10 +24,11 @@ void wred::incr(unsigned q_num)
         return;
     }
 
-    q_size[q_num]++;
+    //q_size[q_num]++;
+    q_size[q_num] = q_size[q_num] + bytes;
 }
 
-void wred::decr(unsigned q_num)
+void wred::decr(unsigned q_num, int bytes)
 {
     if (q_num > VOQ_NUM)
     {
@@ -35,7 +36,8 @@ void wred::decr(unsigned q_num)
         return;
     }
 
-    --q_size[q_num];
+    //--q_size[q_num];
+    q_size[q_num] = q_size[q_num] - bytes;
 }
 
 void wred::reset_size(void) { memset(&q_size, 0x0, VOQ_NUM * 4); }
@@ -83,7 +85,7 @@ void wred::policy()
         if (dq_report_valid.read() == true)
         {
             log.prefix() << "q out !" << std::endl;
-            decr(dq_report.read().get_flow_id());
+            decr(dq_report.read().get_flow_id(), Pd_wred.get_length());
         }
 
         if (pd_fc.read() == false)
@@ -95,11 +97,11 @@ void wred::policy()
                 log.prefix() << "clk is :" << sc_time_stamp() << "::" << get_size(Pd_wred.get_flowID())
                              << "::" << get_thrs(Pd_wred.get_flowID()) << std::endl;
 
-                if (get_size(Pd_wred.get_flowID()) < get_thrs(Pd_wred.get_flowID()))
+                if (get_size(Pd_wred.get_flowID() + Pd_wred.get_length()) < get_thrs(Pd_wred.get_flowID()))
                 {
                     log.prefix() << "q in !" << std::endl;
                     wredCounter.increase_counter("pass", 1);
-                    incr(Pd_wred.get_flowID());
+                    incr(Pd_wred.get_flowID(), Pd_wred.get_length());
                     Pd_wred.set_result(false);
                 }
                 else

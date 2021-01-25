@@ -2,7 +2,7 @@
  * @Author: Zhao Yunpeng
  * @Date: 2020-11-30 09:20:25
  * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-12-26 18:04:40
+ * @LastEditTime: 2021-01-21 10:17:04
  * @Description: file content
  */
 #include "CreditGenerator.h"
@@ -14,7 +14,7 @@ void CreditGenerator::generate()
         FlowStatusMessage message = flow_status_message_in.read();
         unsigned flow_id = -1;
         unsigned dest_tm_id = -1;
-        FlowStatus status;
+        CreditRequestStatus status;
         try
         {
             flow_id = message.get_flow_id();

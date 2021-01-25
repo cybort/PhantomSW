@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-06 14:44:16
- * @LastEditTime: 2021-01-06 15:31:34
+ * @LastEditTime: 2021-01-25 11:37:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /w21064/F20210106/trunk/FPrj/ftm/include/cavd/wred.h
@@ -45,8 +45,8 @@ SC_MODULE(wred)
     ConfigAccesssor wredConfig;
     StatCounter wredCounter;
 
-    void incr(unsigned q_num);
-    void decr(unsigned q_num);
+    void incr(unsigned q_num, int bytes);
+    void decr(unsigned q_num, int bytes);
     int get_size(unsigned q_num);
     void reset_size(void);
     int get_thrs(unsigned q_num);
@@ -57,17 +57,17 @@ SC_MODULE(wred)
 
     SC_CTOR(wred) : log(name()), wredConfig(name()), wredCounter(name())
     {
-        wredConfig.register_config("thrs", ConfigDB::Repeated); 
+        wredConfig.register_config("thrs", ConfigDB::Repeated);
         wredCounter.register_counter("pass");
         wredCounter.register_counter("drop");
         for (int i = 0; i < VOQ_NUM; i++)
             q_size[i] = 0;
         for (int i = 0; i < VOQ_NUM; i++)
         {
-            wredConfig.update_config("thrs", i, 0);
+            wredConfig.update_config("thrs", i, 1000000000);
             q_thrs[i] = wredConfig.retrieve_config("thrs", i); // 这个值从外部设置,从外部读取
-            log.prefix() << "wred q:" << i << "thrs:" << q_thrs[i] << std::endl;
-        }   
+            // log.prefix() << "wred q:" << i << "thrs:" << q_thrs[i] << std::endl;
+        }
 
         SC_THREAD(policy);
         sensitive << clk.pos();

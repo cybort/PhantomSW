@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-26 14:12:04
  * @LastEditors: f21538
- * @LastEditTime: 2021-01-04 13:40:19
+ * @LastEditTime: 2021-01-19 17:33:01
  */
 #ifndef _STAT_CONFIGDB_H_
 #define _STAT_CONFIGDB_H_
@@ -113,8 +113,8 @@ public:
         return ConfigDB::GetInstance().retrieve_config(module, config_name, addr);
     }
 
-    void retrieve_counter_lines(const std::string & config_name,
-                                std::vector<std::pair<int /*addr*/, int /*value*/>> & container /*output*/)
+    void retrieve_config_lines(const std::string & config_name,
+                               std::vector<std::pair<int /*addr*/, int /*value*/>> & container /*output*/)
     {
         ConfigDB::GetInstance().retrieve_config_lines(module, config_name, container);
     }

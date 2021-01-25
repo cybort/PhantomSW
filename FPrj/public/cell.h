@@ -13,6 +13,7 @@
 
 #define CELL_SIZE (sizeof(cell))
 #define CELL_UNICAST_SIZE (sizeof(cell_unicast))
+#define CELL_MULTICAST_SIZE (sizeof(cell_multicast))
 #define CELL_FLOWSTS_SIZE (sizeof(cell_flowsts))
 #define CELL_CREDIT_SIZE (sizeof(cell_credit))
 //#define CELL_ROUTE_SIZE (sizeof(cell_route))
@@ -21,7 +22,7 @@
 #define CELL_DATA_SIZE 256
 namespace CellType
 {
-enum cellType
+enum Type
 {
     Unicast,
     Multicast,
@@ -80,6 +81,7 @@ enum cellType
 #endif
 
 struct cell_unicast;
+struct cell_multicast;
 struct cell_flowsts;
 struct cell_credit;
 // struct cell_route;
@@ -192,8 +194,8 @@ struct cell_unicast
 
     void set_empty() { type = CellType::Empty; }
 
-    cell_unicast() =
-        default; // class without a user-provided or deleted default constructor is zero-initialized since 201103L
+    // class without a user-provided or deleted default constructor is zero-initialized since 201103L
+    cell_unicast() = default;
     /*cell_unicast() //:raw_data({0})
     {
 #if __cplusplus > 199711L
@@ -232,6 +234,142 @@ struct cell_unicast
                    : (this->packet_id() < c.packet_id());
     }
     bool operator>(const cell_unicast & c) const
+    {
+        return this->packet_id() == c.packet_id()
+                   ? (this->cell_id() == c.cell_id() ? (this->source_id() > c.source_id())
+                                                     : (this->cell_id() > c.cell_id()))
+                   : (this->packet_id() > c.packet_id());
+    }
+};
+
+struct cell_multicast
+{
+    union
+    {
+        char raw_data[];
+        struct
+        {
+            unsigned ver : 2;
+            unsigned type : 4;
+            unsigned lv : 1;
+            unsigned fsyn : 1;
+            unsigned ssyn : 1;
+            unsigned up : 1;
+            unsigned mp : 1;
+            unsigned tp : 1;
+            unsigned cp : 1;
+            unsigned eop : 1;
+            unsigned pack : 1;
+            unsigned tsci : 3;
+            unsigned st : 1;
+            unsigned uci : 2;
+            unsigned mci : 2;
+            unsigned len : 9;
+            unsigned src : 11;
+            // unsigned /*reserved*/ : 3;
+            // unsigned mcid : 18;
+            unsigned /*reserved*/ : 9;
+            unsigned mcid : 12;
+            unsigned /*reserved*/ : 2;
+            unsigned fseq : 6;
+            unsigned fts : 24;
+            unsigned /*reserved*/ : 2;
+            unsigned sseq : 6;
+            unsigned sts : 24;
+            char data[CELL_DATA_SIZE];
+            unsigned crc;
+        } GNUC_PACKED;
+    };
+    inline unsigned cell_type() const { return type; }
+    inline void cell_type(unsigned t) { type = t; }
+
+    inline unsigned source_id() const { return src; }
+    inline void source_id(unsigned t) { src = t; }
+
+    inline unsigned multicast_id() const { return mcid; }
+    inline void multicast_id(unsigned t) { mcid = t; }
+
+    inline unsigned cell_id() const { return fseq; }
+    inline void cell_id(unsigned t) { fseq = t; }
+
+    inline unsigned packet_id() const { return fts; }
+    inline void packet_id(unsigned t) { fts = t; }
+
+    inline unsigned timeslot() const { return fts; }
+    inline void timeslot(unsigned t) { fts = t; }
+
+    void dump(std::ostream & os = std::cout)
+    {
+        // os << "packet id: " << packet_id() << " cell id: " << cell_id();
+        dump_header(os);
+        os << " \" ";
+        for (int i = 0; i < sizeof(*this); i++)
+        {
+            os << std::hex << (0xFF & raw_data[i]) << " ";
+        }
+        os << " \"" << std::endl;
+    }
+    /*void dump_header()
+    {
+        std::cout<<std::boolalpha<<std::setw(20)<<setiosflags(ios::left)<<" packet id(timeslot): "<<packet_id()<<"\tcell
+    id(sequence): "<<cell_id()<<"\ttype"<<type<<"\tlength"<<len<<" eop "<<eop<<std::endl;
+    }*/
+    void dump_header(std::ostream & os = std::cout)
+    {
+        os << std::boolalpha << std::setw(15) << setiosflags(ios::left) << " packet id(timeslot): " << packet_id()
+           << "\tcell id(sequence): " << cell_id() << "\ttype" << type << "\tlength" << len << " eop " << eop
+           << std::endl;
+    }
+
+    void dump_header(const std::string & s, std::ostream & os = std::cout) { dump_header(s.c_str(), os); }
+
+    void dump_header(const char * s, std::ostream & os = std::cout)
+    {
+        os << std::boolalpha << std::setw(15) << setiosflags(ios::left) << s << " packet id(timeslot): " << packet_id()
+           << "\tcell id(sequence): " << cell_id() << "\ttype" << type << "\tlength" << len << "\teop " << eop
+           << "\tsource: " << source_id() << "\tmcid: " << multicast_id() << std::endl;
+    }
+
+    unsigned refresh_crc()
+    {
+        crc = crc16_CCITT((unsigned char *)raw_data, sizeof(*this) - sizeof(crc));
+        // cout<<crc<<endl;
+        // dump_header("crc refersh");
+        return crc;
+    }
+
+    bool verify_crc()
+    {
+        unsigned current_crc = crc16_CCITT((unsigned char *)raw_data, sizeof(*this) - sizeof(crc));
+        // cout<<current_crc<<" "<<crc<<endl;
+        // dump_header("crc verify");
+        return current_crc == crc;
+    }
+
+    bool is_empty() { return (type == CellType::Empty); }
+
+    void set_empty() { type = CellType::Empty; }
+
+    // class without a user-provided or deleted default constructor is zero-initialized since 201103L
+    cell_multicast() = default;
+
+    template <typename T> cell_multicast(T & c) { std::copy(c.raw_data, c.raw_data + sizeof(c), raw_data); }
+
+    template <typename T> void extract(T & c) { std::copy(raw_data, raw_data + sizeof(c), c.raw_data); }
+
+    bool operator==(const cell_multicast & c) const
+    {
+        return std::equal(this->raw_data, this->raw_data + sizeof(*this), c.raw_data);
+    }
+    friend std::ostream & operator<<(std::ostream & os, const cell_multicast & t) { return os << ""; }
+    bool operator<(const cell_multicast & c) const
+    {
+        return this->packet_id() == c.packet_id()
+                   ? (this->cell_id() == c.cell_id() ? (this->source_id() < c.source_id())
+                                                     : (this->cell_id() < c.cell_id()))
+                   : (this->packet_id() < c.packet_id());
+    }
+    bool operator>(const cell_multicast & c) const
     {
         return this->packet_id() == c.packet_id()
                    ? (this->cell_id() == c.cell_id() ? (this->source_id() > c.source_id())
@@ -330,6 +468,7 @@ struct cell_flowsts
 
     void set_empty() { type = CellType::Empty; }
 
+    // class without a user-provided or deleted default constructor is zero-initialized since 201103L
     cell_flowsts() = default;
     /*cell_flowsts() //:raw_data({0})
     {
@@ -429,6 +568,7 @@ struct cell_credit
 
     void set_empty() { type = CellType::Empty; }
 
+    // class without a user-provided or deleted default constructor is zero-initialized since 201103L
     cell_credit() = default;
     /*cell_credit() //:raw_data({0})
     {

@@ -1,9 +1,9 @@
 ## Variable that points to SystemC installation path
-SYSTEMC = ../third-party/systemc/lib
-TLM = ../third-party/tlm
-SCML = ../third-party/scml/install
-SOCKETS = ../third-party/sockets
-INI = ../third-party/ini
+SYSTEMC = ../../../third-party/systemc/lib
+TLM = ../../../third-party/tlm
+SCML = ../../../third-party/scml/install
+SOCKETS = ../../../third-party/sockets
+INI = ../../../third-party/ini
 EXTRA_SRC += $(INI)
 
 vpath %.cpp $(EXTRA_SRC)
@@ -14,8 +14,8 @@ vpath %.h $(EXTRA_INC)
 CUR_DIR = ./
 DIR_SRC = $(CUR_DIR)src/
 DIR_INC = $(CUR_DIR)include/
-DIR_OBJ = $(CUR_DIR)obj/
-DIR_BIN = $(CUR_DIR)bin/
+DIR_OBJ = $(CUR_DIR)/
+DIR_BIN = $(CUR_DIR)/
 DIRS := ./ $(shell find $(DIR_SRC) -maxdepth 2 -type d -not -iwholename '*.svn*') $(shell find $(DIR_INC) -maxdepth 2 -type d -not -iwholename '*.svn*')
 vpath %.cpp $(DIRS)
 vpath %.h $(DIRS)
@@ -28,7 +28,9 @@ LIBS   = -lsystemc -lscml2 -lModelingObjects -lscml2_logging -lm -lSockets -lpth
 
 SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
 SRCS += $(foreach inc, $(EXTRA_SRC), $(wildcard $(inc)/*.cpp))
+SRCS_DEDUP := $(shell echo $(SRCS)|sed 's/ /\n/g'|sort|uniq|tr -t '\n' ' ')
 SRCS_C = $(foreach inc, $(EXTRA_SRC), $(wildcard $(inc)/*.c))
+SRCS_C_DEDUP := $(shell echo $(SRCS_C)|sed 's/ /\n/g'|sort|uniq|tr -t '\n' ' ')
 OBJS = $(patsubst %.cpp,${DIR_OBJ}%.o,$(notdir ${SRCS}))
 OBJS_C = $(patsubst %.c,${DIR_OBJ}%.o,$(notdir ${SRCS_C}))
 OBJS_POS = $(addprefix $(DIR_OBJ),$(OBJS)) $(addprefix $(DIR_OBJ),$(OBJS_C))
@@ -43,18 +45,12 @@ EXE    = $(MODULE)
 .SUFFIXES: .cc .cpp .o
 
 $(EXE): $(OBJS) $(OBJS_C) $(SYSTEMC)/lib-$(TARGET_ARCH)/libsystemc.a $(SCML)/lib-$(TARGET_ARCH)/libscml2.a
-	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
-	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
-	$(CC) $(CFLAGS) $(INCDIR) $(LIBDIR) -o $(DIR_BIN)$@ $(OBJS) $(OBJS_C) $(LIBS) -g3 -O0 -rdynamic #-static
+	$(CC) $(CFLAGS) $(INCDIR) $(LIBDIR) -o $(DIR_BIN)$@ $(OBJS) $(OBJS_C) $(LIBS) -g -rdynamic #-static
 
 $(OBJS):$(DIR_OBJ)%.o:%.cpp
-	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
-	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $@
 
 $(OBJS_C):$(DIR_OBJ)%.o:%.c
-	if [ ! -d $(DIR_OBJ) ]; then mkdir -p $(DIR_OBJ); fi;\
-	if [ ! -d $(DIR_BIN) ]; then mkdir -p $(DIR_BIN); fi;\
 	$(CC) $(CFLAGS) $(INCDIR) -c $< -o $@
 
 #.cpp.o:

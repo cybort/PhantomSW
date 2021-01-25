@@ -17,6 +17,7 @@
                 <rsv>8</rsv> <!-- 6 bit -->
                 <multicast_ID>4</multicast_ID><!-- 18 bit -->
             </ITMH>
+            <![CDATA[
             <ITMH>
                 <itmh_type>3</itmh_type> <!-- 2 bit -->
                 <tc>7</tc> <!-- 3 bit -->
@@ -25,11 +26,14 @@
                 <rsv>3</rsv><!-- 2 bit -->
                 <flowID>52000</flowID> <!-- 17 bit -->
             </ITMH>
+            ]]>
+            
             <data>s------------------------------------------------------------------------------------------------e</data>
         </packet>
         
 
     </stream>
+    <![CDATA[
     <stream name = "fabric" type=1 bursts=5 loadpersec=20 mix=0 TM_ID=1 > <!-- TYPE: 1 burst,0 continue; mix : 0 false, 1 true. -->
 
         <packet name="first">
@@ -58,7 +62,7 @@
         
 
     </stream>
-    
+    ]]>
 
 </protocaltype>
 

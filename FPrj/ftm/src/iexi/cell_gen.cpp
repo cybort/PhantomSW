@@ -20,12 +20,25 @@ void cell_gen::split()
     {
         int start = 0;
         int cell_num = 0;
+
         FPacket current_packet;
         current_packet.set_bytes(s);
-
         FHeader current_header = current_packet.get_ftmh();
 
-        int dest_id = current_header.get_src_tm_id(); // dest cache in src field
+        CellType::Type current_type;
+        int dest_id;
+
+        switch (current_header.get_type())
+        {
+        case FHeader::UNICAST:
+            current_type = CellType::Unicast;
+            dest_id = current_header.get_src_tm_id(); // get dest from src field
+            break;
+        case FHeader::MULTICAST:
+            current_type = CellType::Multicast;
+            dest_id = current_header.get_multicast_id();
+            break;
+        }
 
         current_header.set_src_tm_id(SRC_TM_ID);
         current_packet.set_ftmh(current_header);
@@ -37,16 +50,16 @@ void cell_gen::split()
             if (length > PKT_DATA_BANDWIDTH + MIN_CELL)
             {
                 cell c;
-                fill_cell(c, s.c_str() + start, 64, dest_id);
+                fill_cell(c, s.c_str() + start, MIN_CELL, dest_id, current_type);
                 c.eop = false;
                 cell_q.push(c);
-                start += 64;
-                length -= 64;
+                start += MIN_CELL;
+                length -= MIN_CELL;
 
-                fill_cell(c, s.c_str() + start, 96, dest_id);
+                fill_cell(c, s.c_str() + start, PKT_DATA_BANDWIDTH - MIN_CELL, dest_id, current_type);
                 c.eop = false;
-                start += 96;
-                length -= 96;
+                start += PKT_DATA_BANDWIDTH - MIN_CELL;
+                length -= PKT_DATA_BANDWIDTH - MIN_CELL;
                 cell_q.push(c);
 
                 cell_num += 2;
@@ -56,15 +69,15 @@ void cell_gen::split()
                 if (length > MID_CELL)
                 {
                     cell c;
-                    fill_cell(c, s.c_str() + start, 64, dest_id);
+                    fill_cell(c, s.c_str() + start, MIN_CELL, dest_id, current_type);
                     c.eop = false;
                     cell_q.push(c);
-                    start += 64;
-                    length -= 64;
+                    start += MIN_CELL;
+                    length -= MIN_CELL;
 
                     cell_num++;
 
-                    /*fill_cell(c, s.c_str()+start, length, dest_id);
+                    /*fill_cell(c, s.c_str()+start, length, dest_id, current_type);
                     c.eop = true;
                     cell_q.push(c);
                     start+=length;
@@ -75,7 +88,7 @@ void cell_gen::split()
                 else
                 {
                     cell c;
-                    fill_cell(c, s.c_str() + start, length, dest_id);
+                    fill_cell(c, s.c_str() + start, length, dest_id, current_type);
                     c.eop = true;
                     cell_q.push(c);
                     start += length;
@@ -90,16 +103,32 @@ void cell_gen::split()
     }
 }
 
-cell & cell_gen::fill_cell(cell & c, const char * str, int str_size, int dest_id)
+cell & cell_gen::fill_cell(cell & c, const char * str, int str_size, int dest_id, CellType::Type type)
 {
-    memcpy(c.data, str, str_size);
+    std::copy(str, str + str_size, c.data);
     c.len = str_size;
-    c.cell_type(CellType::Unicast);
+    c.cell_type(type);
     c.source_id(SRC_TM_ID);
-    c.dest_id(dest_id);
+    switch (type)
+    {
+    case CellType::Unicast:
+    {
+        c.dest_id(dest_id);
+        break;
+    }
+    case CellType::Multicast:
+    {
+        cell_multicast c_mul(c);
+        c_mul.multicast_id(dest_id);
+        c_mul.extract(c);
+        break;
+    }
+    }
+
     if (debug)
     {
-        log.prefix() << "fill cell length:" << c.len << endl;
+        log.prefix() << "fill cell length:" << c.len
+                     << " type: " << (type == CellType::Unicast ? "Unicast" : "Multicast") << std::endl;
     }
     return c;
 }
@@ -131,7 +160,6 @@ void cell_gen::transfer()
         c.cell_id(current_seq);
         c.refresh_crc();
         current_seq++;
-        /*c.data...*/
         valid[i].write(true);
         data[i].write(c);
         if (debug)

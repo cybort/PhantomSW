@@ -2,7 +2,7 @@
  * @Author: your name
  * @Date: 2020-11-30 09:20:25
  * @LastEditors: Zhao Yunpeng
- * @LastEditTime: 2020-11-30 16:17:41
+ * @LastEditTime: 2020-12-26 14:42:20
  * @Description: file content
  */
 #include "EnQueueReport.h"
@@ -29,4 +29,4 @@ void EnQueueReport::set_packet_size(unsigned packet_size)
 
 unsigned EnQueueReport::get_packet_size() { return this->packet_size; }
 
-void sc_trace(sc_trace_file *tf, const EnQueueReport &v, const std::string &name) {}
+void sc_trace(sc_trace_file * tf, const EnQueueReport & v, const std::string & name) {}

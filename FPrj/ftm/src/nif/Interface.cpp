@@ -1,8 +1,8 @@
 /*
  * @Author: duyang
  * @Date: 2020-11-07 10:06:20
- * @LastEditTime: 2021-01-06 14:44:02
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-01-12 17:09:14
+ * @LastEditors: f21538
  * @Description: In User Settings Edit
  */
 
@@ -47,60 +47,86 @@ void Interface::recv_from_tc()
                 log.prefix() << "start to recieve pakcet ! " << std::endl;
                 if (recv_packet_fifo.size() < 10)
                 {
-                    pkt_temp1.set_bytes(str);
-                    str1 = pkt_temp1.get_payload();
-
-                    itmh = pkt_temp1.get_itmh();
-                    type = itmh.get_type();
-                    ftmh.set_packet_size(str1.size());
-                    ftmh.set_ver(_VERSION_);
-                    ftmh.set_src_tm_id(_TM_ID_);
-
-                    if (type == IHeader::TDM)
+                    try
                     {
-                        ftmh.set_type(FHeader::TDM_UNICAST);
-                        log.prefix() << "packet type : ITMH_TDM " << std::endl;
-                    }
-                    else if (type == IHeader::MULTICAST)
-                    {
-                        ftmh.set_type(FHeader::MULTICAST);
-                        tmp = itmh.get_multicast_id();
-                        ftmh.set_multicast_id(tmp);
-                        tmp = itmh.get_tc();
-                        ftmh.set_tc(tmp);
-                        tmp = itmh.get_dp();
-                        ftmh.set_dp(tmp);
-                        tmp = itmh.get_cal_len_index();
-                        ftmh.set_cal_len(tmp);
-                        log.prefix() << "packet type : ITMH_MULTICAST " << std::endl;
-                    }
-                    else if (type == IHeader::UNICAST)
-                    {
-                        ftmh.set_type(FHeader::UNICAST);
-                        tmp = itmh.get_tc();
-                        ftmh.set_tc(tmp);
-                        tmp = itmh.get_dp();
-                        ftmh.set_dp(tmp);
-                        tmp = itmh.get_cal_len_index();
-                        ftmh.set_cal_len(tmp);
-                        log.prefix() << "packet type : ITMH_UNICAST " << std::endl;
 
-                        tmp = itmh.get_flow_id();
-                        tmppd.set_flowID(tmp);
-                        log.prefix() << " flowID : " << tmp << endl;
+                        pkt_temp1.set_bytes(str);
+                        str1 = pkt_temp1.get_payload();
+
+                        itmh = pkt_temp1.get_itmh();
+                        type = itmh.get_type();
+                        ftmh.set_packet_size(str1.size());
+                        ftmh.set_ver(_VERSION_);
+                        ftmh.set_src_tm_id(_TM_ID_);
+
+                        if (type == IHeader::TDM)
+                        {
+                            ftmh.set_type(FHeader::TDM_UNICAST);
+                            log.prefix() << "packet type : ITMH_TDM " << std::endl;
+                        }
+                        else if (type == IHeader::MULTICAST)
+                        {
+                            ftmh.set_type(FHeader::MULTICAST);
+                            tmp = itmh.get_multicast_id();
+                            ftmh.set_multicast_id(tmp);
+                            tmp = itmh.get_tc();
+                            ftmh.set_tc(tmp);
+                            if( 0 == tmp)
+                            {
+                                tmppd.set_flowID(0);
+                            }
+                            else if(tmp & 0x4)
+                            {
+                                tmppd.set_flowID(3);
+                            }
+                            else if(tmp & 0x2)
+                            {
+                                tmppd.set_flowID(2);
+                            }
+                            else
+                            {
+                                tmppd.set_flowID(1);
+                            }
+
+                            tmp = itmh.get_dp();
+                            ftmh.set_dp(tmp);
+
+                            // tmp = itmh.get_cal_len_index();
+                            // ftmh.set_cal_len(tmp);
+                            log.prefix() << "packet type : ITMH_MULTICAST " << std::endl;
+                        }
+                        else if (type == IHeader::UNICAST)
+                        {
+                            ftmh.set_type(FHeader::UNICAST);
+                            tmp = itmh.get_tc();
+                            ftmh.set_tc(tmp);
+                            tmp = itmh.get_dp();
+                            ftmh.set_dp(tmp);
+                            tmp = itmh.get_cal_len_index();
+                            ftmh.set_cal_len(tmp);
+                            log.prefix() << "packet type : ITMH_UNICAST " << std::endl;
+
+                            tmp = itmh.get_flow_id();
+                            tmppd.set_flowID(tmp);
+                            log.prefix() << " flowID : " << tmp << endl;
+                        }
+                        else
+                        {
+                            log.prefix() << "TYPE ERROR: " << type << std::endl;
+                            continue;
+                        }
+
+                        pkt_temp3.set_ftmh(ftmh);
+                        pkt_temp3.set_payload(str1);
+                        recv_packet_fifo.push(pkt_temp3);
+
+                        tmppd.set_length(str.size());
+                        pdFifo.push(tmppd);
                     }
-                    else
+                    catch (Exception & e)
                     {
-                        log.prefix() << "TYPE ERROR: " << type << std::endl;
-                        continue;
+                        std::cout << e.ToString() << std::endl << e.Stack() << std::endl;
                     }
-
-                    pkt_temp3.set_ftmh(ftmh);
-                    pkt_temp3.set_payload(str1);
-                    recv_packet_fifo.push(pkt_temp3);
-
-                    tmppd.set_length(str.size());
-                    pdFifo.push(tmppd);
                 }
                 else
                 {
@@ -157,7 +183,7 @@ void Interface::qin_request()
 
         if (wred_rd.read() == true)
         {
-            log.prefix() << "read" << std::endl;
+            // log.prefix() << "read" << std::endl;
             if (pdFifo.empty() != true)
             {
                 pd_out.write(pdFifo.front());

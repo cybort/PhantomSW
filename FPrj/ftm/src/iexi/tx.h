@@ -3,7 +3,7 @@
  * @Author: f21538
  * @Date: 2020-11-27 18:12:14
  * @LastEditors: f21538
- * @LastEditTime: 2021-01-06 11:43:09
+ * @LastEditTime: 2021-01-23 14:17:48
  */
 #ifndef _TX_H_
 #define _TX_H_
@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <vector>
-
+#define LINK_MAX 144
 SC_MODULE(tx)
 {
     bool debug;
@@ -37,13 +37,17 @@ SC_MODULE(tx)
     sc_in<cell_credit> credit_grant;
     sc_in<bool> valid_credit_grant;
 
+    sc_out<sc_bv<LINK_MAX>> link_valid_out;
+
+    bool link_status[LINK_MAX];
+
     tlm_utils::tlm_quantumkeeper keeper;
     QueueSocketHandler<cell> qh;
     std::vector<SocketHandler> h;
     std::vector<bool> used;
     std::vector<ClientSocketLong<cell> *> cc;
-    std::string link_ip[36];
-    int link_port[36];
+    std::vector<std::string> link_ip;
+    std::vector<int> link_port;
 
     int current_t;
     int used_num;
@@ -65,7 +69,7 @@ SC_MODULE(tx)
 
     SC_CTOR(tx)
         : debug(false), log(name()), stat(name()), shuffle_depth(0), cc(SEND_SOCKETS_NUM), used(SEND_SOCKETS_NUM),
-          h(SEND_SOCKETS_NUM)
+          h(SEND_SOCKETS_NUM), link_ip(SEND_SOCKETS_NUM), link_port(SEND_SOCKETS_NUM)
     {
         tlm_utils::tlm_quantumkeeper::set_global_quantum(sc_time(20, SC_MS));
         keeper.reset();
